@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/Users/matthewryan/.nvm/versions/node/v22.22.0/bin/node",
+      "runtimeArgs": ["/Users/matthewryan/.nvm/versions/node/v22.22.0/bin/npx", "next", "dev"],
+      "port": 3000,
+      "env": {
+        "DATABASE_URL": "file:./dev.db"
+      }
+    }
+  ]
+}
