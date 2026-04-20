@@ -5,6 +5,14 @@ import { getCurrentUser, setSessionCookie } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   try {
+    console.error(
+      "[rooms-route] TURSO_DATABASE_URL present:",
+      !!process.env.TURSO_DATABASE_URL,
+      "TURSO_AUTH_TOKEN present:",
+      !!process.env.TURSO_AUTH_TOKEN,
+      "DATABASE_URL:",
+      process.env.DATABASE_URL
+    );
     const body = await request.json();
     const { hostName, roomName, mode, candidates } = body as {
       hostName?: string;
