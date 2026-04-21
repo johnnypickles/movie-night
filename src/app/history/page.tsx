@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { History, Star, Loader2, Film } from "lucide-react";
+import { History, Star, Loader2, Film, Search, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/use-session";
 import { useRouter } from "next/navigation";
 import { tmdb } from "@/lib/tmdb";
+import { useTmdbSearch } from "@/hooks/use-tmdb-search";
 
 interface HistoryItem {
   id: string;
@@ -96,12 +98,28 @@ export default function HistoryPage() {
           transition={{ duration: 0.4 }}
         >
           <div className="text-center mb-10">
-            <div className="w-14 h-14 rounded-xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
-              <History className="w-7 h-7 text-accent-400" />
+            <div className="font-condensed uppercase tracking-[0.3em] text-accent-500 text-xs mb-2">
+              · Your Archive ·
             </div>
-            <h1 className="text-3xl font-bold text-cinema-900">Watch History</h1>
-            <p className="text-cinema-700 mt-1">Movies you&apos;ve watched with your groups</p>
+            <div className="w-14 h-14 bg-gold-500 border-2 border-cinema-900 shadow-[3px_3px_0_var(--color-cinema-900)] flex items-center justify-center mx-auto mb-3">
+              <History className="w-7 h-7 text-cinema-900" strokeWidth={2.5} />
+            </div>
+            <h1 className="font-marquee text-3xl text-cinema-900">
+              Watch History
+            </h1>
+            <p className="font-typewriter text-sm text-cinema-700 mt-1">
+              Everything you&apos;ve watched — rate anything, anytime.
+            </p>
           </div>
+
+          {/* Rate any movie */}
+          <RateAnyMovie
+            onRated={() => {
+              fetch("/api/history")
+                .then((r) => r.json())
+                .then((d) => setHistory(d.history || []));
+            }}
+          />
 
           {loading ? (
             <div className="text-center py-12">
@@ -267,5 +285,220 @@ export default function HistoryPage() {
         </motion.div>
       </main>
     </>
+  );
+}
+
+// Rate any movie — search TMDB, pick one, star + comment, save.
+interface SearchPick {
+  id: number;
+  title: string;
+  year: string | null;
+  posterPath: string | null;
+}
+
+function RateAnyMovie({ onRated }: { onRated: () => void }) {
+  const [query, setQuery] = useState("");
+  const { results, loading } = useTmdbSearch(query);
+  const [picked, setPicked] = useState<SearchPick | null>(null);
+  const [rating, setRating] = useState(7);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [ok, setOk] = useState(false);
+
+  async function save() {
+    if (!picked) return;
+    setSaving(true);
+    try {
+      // mark watched so metadata (title/poster) lives in history
+      await fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tmdbMovieId: picked.id,
+          title: picked.title,
+          posterPath: picked.posterPath,
+        }),
+      });
+      await fetch("/api/ratings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tmdbMovieId: picked.id,
+          rating,
+          comment: comment.trim() || null,
+        }),
+      });
+      setOk(true);
+      setTimeout(() => setOk(false), 2000);
+      setPicked(null);
+      setQuery("");
+      setComment("");
+      setRating(7);
+      onRated();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="bg-cinema-50 border-2 border-cinema-900 shadow-[6px_6px_0_var(--color-cinema-900)] p-5 mb-8">
+      <div className="font-condensed uppercase tracking-widest text-cinema-900 text-sm mb-3">
+        Rate Any Movie
+      </div>
+
+      {!picked ? (
+        <div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cinema-700 pointer-events-none" />
+            <Input
+              placeholder="Search any movie…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          {loading && (
+            <p className="font-typewriter text-xs text-cinema-700 mt-2">
+              Searching…
+            </p>
+          )}
+          {results.length > 0 && (
+            <div className="mt-2 border-2 border-cinema-900 max-h-64 overflow-y-auto bg-cinema-50">
+              {results.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() =>
+                    setPicked({
+                      id: r.id,
+                      title: r.title,
+                      year: r.year,
+                      posterPath: r.posterPath,
+                    })
+                  }
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gold-400 border-b border-dashed border-cinema-800/30 last:border-b-0"
+                >
+                  {r.posterPath ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`https://image.tmdb.org/t/p/w92${r.posterPath}`}
+                      alt=""
+                      className="w-10 h-14 object-cover border border-cinema-900"
+                    />
+                  ) : (
+                    <div className="w-10 h-14 bg-cinema-100 border border-cinema-900 flex items-center justify-center">
+                      <Film className="w-4 h-4 text-cinema-700" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm text-cinema-900 truncate">
+                      {r.title}
+                    </div>
+                    <div className="font-typewriter text-xs text-cinema-700">
+                      {r.year || "—"}
+                    </div>
+                  </div>
+                  <Plus className="w-4 h-4 text-cinema-700 ml-auto" />
+                </button>
+              ))}
+            </div>
+          )}
+          {ok && (
+            <p className="font-typewriter text-success text-sm mt-2">
+              Saved!
+            </p>
+          )}
+        </div>
+      ) : (
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            {picked.posterPath ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`https://image.tmdb.org/t/p/w154${picked.posterPath}`}
+                alt=""
+                className="w-14 h-20 object-cover border-2 border-cinema-900"
+              />
+            ) : (
+              <div className="w-14 h-20 bg-cinema-100 border-2 border-cinema-900 flex items-center justify-center">
+                <Film className="w-5 h-5 text-cinema-700" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="font-condensed uppercase tracking-wide text-cinema-900 text-lg truncate">
+                {picked.title}
+              </div>
+              <div className="font-typewriter text-xs text-cinema-700">
+                {picked.year || "—"}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPicked(null)}
+              className="text-cinema-700 hover:text-accent-500"
+              aria-label="Cancel"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1 mb-3">
+            {Array.from({ length: 10 }, (_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setRating(i + 1)}
+                className="cursor-pointer"
+              >
+                <Star
+                  className={cn(
+                    "w-6 h-6 transition-colors",
+                    i < rating
+                      ? "text-gold-500 fill-gold-500"
+                      : "text-cinema-700/40 hover:text-gold-400"
+                  )}
+                />
+              </button>
+            ))}
+            <span className="font-condensed text-cinema-900 ml-2 text-sm">
+              {rating}/10
+            </span>
+          </div>
+
+          <textarea
+            placeholder="Add a comment (optional)"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={2}
+            maxLength={500}
+            className="w-full text-sm bg-cinema-50 border-2 border-cinema-900 px-3 py-2 font-typewriter text-cinema-900 placeholder:text-cinema-700/60 focus:outline-none focus:ring-2 focus:ring-gold-500 resize-none"
+          />
+
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" onClick={save} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving…
+                </>
+              ) : (
+                <>
+                  <Star className="w-4 h-4" />
+                  Save Rating
+                </>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setPicked(null)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

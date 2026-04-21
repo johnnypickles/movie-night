@@ -406,7 +406,10 @@ function ProfileHeader({ user, onUpdated }: ProfileHeaderProps) {
             </div>
           )}
         </div>
-        <h1 className="font-marquee text-3xl text-cinema-900">
+        <h1
+          className="font-marquee text-3xl"
+          style={{ color: "var(--color-cinema-900)" }}
+        >
           {user.name || "Anonymous"}
         </h1>
         <button

@@ -30,9 +30,15 @@ export default function RoomLobbyPage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [roomName, setRoomName] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentUserId(localStorage.getItem(`room-${code}-userId`));
+    // Fetch room metadata (name) once.
+    fetch(`/api/rooms/${code}`)
+      .then((r) => r.json())
+      .then((d) => setRoomName(d?.name ?? null))
+      .catch(() => {});
   }, [code]);
 
   useEffect(() => {
@@ -128,7 +134,7 @@ export default function RoomLobbyPage() {
               · Admit One ·
             </div>
             <h1 className="font-marquee text-4xl md:text-5xl text-cinema-900 mb-2">
-              The Lobby
+              {roomName || "Movie Night"}
             </h1>
             <p className="font-typewriter text-sm text-cinema-700">
               Share the ticket. Seat the crew. Start the show.
