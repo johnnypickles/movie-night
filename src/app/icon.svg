@@ -20,18 +20,17 @@
     <rect x="49" y="49" width="5" height="5" rx="1"/>
   </g>
 
-  <!-- MM monogram -->
+  <!-- M monogram -->
   <text
     x="32"
-    y="43"
+    y="44"
     font-family="Georgia, 'Playfair Display', serif"
-    font-size="24"
+    font-size="30"
     font-weight="900"
     text-anchor="middle"
     fill="#e6c565"
     stroke="#261a0e"
-    stroke-width="1.2"
+    stroke-width="1.5"
     paint-order="stroke"
-    letter-spacing="-1"
-  >MM</text>
+  >M</text>
 </svg>
