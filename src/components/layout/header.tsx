@@ -1,33 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { Film, History, Users, LogOut } from "lucide-react";
+import { History, Users, LogOut, Ticket } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 
 export function Header() {
   const { user, logout } = useSession();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cinema-800/50 bg-cinema-950/80 backdrop-blur-md">
-      <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-lg bg-accent-500 flex items-center justify-center group-hover:bg-accent-400 transition-colors">
-            <Film className="w-5 h-5 text-white" />
+    <header className="sticky top-0 z-50 bg-cinema-50 border-b-2 border-cinema-900">
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 bg-accent-500 border-2 border-cinema-900 shadow-[2px_2px_0_var(--color-cinema-900)] flex items-center justify-center group-hover:bg-accent-400 transition-colors">
+            <Ticket className="w-5 h-5 text-cinema-50" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-lg text-cinema-100">
+          <span
+            className="font-marquee text-xl sm:text-2xl text-cinema-900 leading-none"
+            style={{ letterSpacing: "0.02em" }}
+          >
             Movie Night
           </span>
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-3">
+        <nav className="flex items-center gap-1 sm:gap-3 font-condensed uppercase tracking-widest text-xs sm:text-sm">
           <Link
             href="/room/join"
-            className="text-sm text-cinema-400 hover:text-cinema-200 transition-colors px-2 py-1.5 rounded-lg hover:bg-cinema-800/50"
+            className="text-cinema-800 hover:text-accent-500 transition-colors px-2 py-1.5"
           >
             Join
           </Link>
           <Link
             href="/room/create"
-            className="text-sm text-cinema-400 hover:text-cinema-200 transition-colors px-2 py-1.5 rounded-lg hover:bg-cinema-800/50"
+            className="text-cinema-800 hover:text-accent-500 transition-colors px-2 py-1.5"
           >
             Create
           </Link>
@@ -35,7 +38,7 @@ export function Header() {
             <>
               <Link
                 href="/history"
-                className="text-sm text-cinema-400 hover:text-cinema-200 transition-colors px-2 py-1.5 rounded-lg hover:bg-cinema-800/50"
+                className="text-cinema-800 hover:text-accent-500 transition-colors px-2 py-1.5"
                 title="Watch History"
               >
                 <History className="w-4 h-4 sm:hidden" />
@@ -43,22 +46,22 @@ export function Header() {
               </Link>
               <Link
                 href="/profile"
-                className="text-sm text-cinema-400 hover:text-cinema-200 transition-colors px-2 py-1.5 rounded-lg hover:bg-cinema-800/50"
-                title="Profile & Friends"
+                className="text-cinema-800 hover:text-accent-500 transition-colors px-2 py-1.5"
+                title="Profile"
               >
                 <Users className="w-4 h-4 sm:hidden" />
                 <span className="hidden sm:inline">Profile</span>
               </Link>
-              <div className="flex items-center gap-2 ml-2 pl-2 border-l border-cinema-700">
-                <div className="w-7 h-7 rounded-full bg-accent-500/20 flex items-center justify-center text-xs font-bold text-accent-400">
+              <div className="flex items-center gap-2 ml-2 pl-3 border-l-2 border-cinema-900">
+                <div className="w-7 h-7 bg-gold-500 border-2 border-cinema-900 flex items-center justify-center text-xs font-bold text-cinema-900 font-condensed">
                   {user.name?.charAt(0).toUpperCase() ?? "?"}
                 </div>
-                <span className="text-sm text-cinema-300 hidden sm:inline max-w-[80px] truncate">
+                <span className="text-cinema-900 hidden sm:inline max-w-[80px] truncate font-serif normal-case tracking-normal">
                   {user.name}
                 </span>
                 <button
                   onClick={logout}
-                  className="text-cinema-500 hover:text-cinema-300 transition-colors cursor-pointer"
+                  className="text-cinema-700 hover:text-accent-500 transition-colors cursor-pointer"
                   title="Log out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -69,7 +72,7 @@ export function Header() {
           {!user && (
             <Link
               href="/login"
-              className="text-sm bg-accent-500 text-white px-4 py-1.5 rounded-lg hover:bg-accent-400 transition-colors font-medium"
+              className="bg-accent-500 text-cinema-50 px-4 py-2 border-2 border-cinema-900 shadow-[2px_2px_0_var(--color-cinema-900)] hover:bg-accent-400 transition-colors"
             >
               Log In
             </Link>

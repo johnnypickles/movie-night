@@ -8,7 +8,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-cinema-700/50 bg-cinema-900/80 backdrop-blur-sm shadow-xl",
+        "bg-cinema-50 text-cinema-900 border-2 border-cinema-900 shadow-[6px_6px_0_var(--color-cinema-900)]",
         className
       )}
       {...props}
@@ -24,7 +24,13 @@ export function CardHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("p-6 pb-4", className)} {...props}>
+    <div
+      className={cn(
+        "p-6 pb-4 border-b-2 border-dashed border-cinema-800/40",
+        className
+      )}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -37,7 +43,10 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("text-xl font-bold text-cinema-100", className)}
+      className={cn(
+        "font-condensed uppercase tracking-wider text-2xl text-cinema-900",
+        className
+      )}
       {...props}
     >
       {children}
@@ -51,7 +60,13 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-sm text-cinema-400 mt-1", className)} {...props}>
+    <p
+      className={cn(
+        "text-sm text-cinema-700 mt-1 font-typewriter",
+        className
+      )}
+      {...props}
+    >
       {children}
     </p>
   );
@@ -63,7 +78,7 @@ export function CardContent({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("p-6 pt-0", className)} {...props}>
+    <div className={cn("p-6 pt-4", className)} {...props}>
       {children}
     </div>
   );
@@ -76,7 +91,10 @@ export function CardFooter({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("p-6 pt-0 flex items-center", className)}
+      className={cn(
+        "p-6 pt-0 flex items-center border-t-2 border-dashed border-cinema-800/40",
+        className
+      )}
       {...props}
     >
       {children}

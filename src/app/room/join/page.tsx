@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Users, Loader2 } from "lucide-react";
+import { Ticket, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +12,21 @@ import { useSession } from "@/hooks/use-session";
 
 export default function JoinRoomPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, refresh } = useSession();
   const [code, setCode] = useState("");
   const [guestName, setGuestName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Pre-fill name if user is logged in
+  // Pre-fill code from URL (?code=XXX) for shared links
+  useEffect(() => {
+    const urlCode = searchParams.get("code");
+    if (urlCode && !code) {
+      setCode(urlCode.toUpperCase());
+    }
+  }, [searchParams, code]);
+
   useEffect(() => {
     if (user?.name && !guestName) {
       setGuestName(user.name);
@@ -56,9 +64,7 @@ export default function JoinRoomPage() {
       }
 
       const { participantId } = data;
-      // Save user ID for survey submission
       localStorage.setItem(`room-${trimmedCode}-userId`, participantId);
-      // Refresh session so the header updates (cookie was set by the API)
       await refresh();
       router.push(`/room/${trimmedCode}`);
     } catch (err) {
@@ -68,7 +74,6 @@ export default function JoinRoomPage() {
   }
 
   function handleCodeChange(e: React.ChangeEvent<HTMLInputElement>) {
-    // Auto-format: uppercase, allow letters, numbers, and dashes
     const val = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "");
     setCode(val);
   }
@@ -85,42 +90,50 @@ export default function JoinRoomPage() {
         >
           <Card>
             <CardHeader className="text-center">
-              <div className="w-14 h-14 rounded-xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-7 h-7 text-accent-400" />
+              <div className="inline-flex items-center gap-2 mb-2 font-condensed uppercase tracking-[0.3em] text-accent-500 text-xs justify-center">
+                · Will Call ·
               </div>
-              <CardTitle className="text-2xl">Join a Room</CardTitle>
+              <div className="w-14 h-14 bg-gold-500 border-2 border-cinema-900 shadow-[3px_3px_0_var(--color-cinema-900)] flex items-center justify-center mx-auto mb-3">
+                <Ticket
+                  className="w-7 h-7 text-cinema-900"
+                  strokeWidth={2.5}
+                />
+              </div>
+              <CardTitle>Pick Up Your Ticket</CardTitle>
               <CardDescription>
-                Enter the room code shared by your host
+                Got a code from a friend? Enter it below.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleJoin} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-cinema-300 mb-2">
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
                     Your Name *
                   </label>
                   <Input
-                    placeholder="Enter your name"
+                    placeholder="Your name on the marquee"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-cinema-300 mb-2">
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
                     Room Code *
                   </label>
                   <Input
-                    placeholder="e.g., MOVIE-7X3K"
+                    placeholder="FLICK-XXXX"
                     value={code}
                     onChange={handleCodeChange}
-                    className="text-center text-xl tracking-widest font-mono"
+                    className="text-center text-xl tracking-[0.2em] font-marquee text-accent-500"
                     maxLength={12}
                   />
                 </div>
 
                 {error && (
-                  <p className="text-danger text-sm text-center">{error}</p>
+                  <p className="font-typewriter text-danger text-sm text-center">
+                    {error}
+                  </p>
                 )}
 
                 <Button
@@ -132,10 +145,10 @@ export default function JoinRoomPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Joining...
+                      Taking Your Seat…
                     </>
                   ) : (
-                    "Join Room"
+                    "Take My Seat"
                   )}
                 </Button>
               </form>

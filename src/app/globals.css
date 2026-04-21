@@ -1,57 +1,233 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cinema-950: #1a2332;
-  --color-cinema-900: #243347;
-  --color-cinema-800: #31455e;
-  --color-cinema-700: #456182;
-  --color-cinema-600: #5e80a8;
-  --color-cinema-500: #7a9dc4;
-  --color-cinema-400: #9ab7d8;
-  --color-cinema-300: #b8cfe8;
-  --color-cinema-200: #d5e4f2;
-  --color-cinema-100: #edf3fa;
+  /* ─── Retro Cinema Palette ───────────────────────────── */
+  /* Paper / cream backgrounds */
+  --color-cinema-50: #f8f1de;
+  --color-cinema-100: #f2e9d0;
+  --color-cinema-200: #e8dcb9;
+  --color-cinema-300: #d9c89a;
 
-  --color-accent-500: #c45c5c;
-  --color-accent-400: #d47272;
-  --color-accent-300: #e49393;
+  /* Warm browns */
+  --color-cinema-600: #8a6a3a;
+  --color-cinema-700: #5c4525;
+  --color-cinema-800: #3d2c17;
+  --color-cinema-900: #261a0e;
+  --color-cinema-950: #180f07;
 
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  /* Marquee reds */
+  --color-accent-300: #e8a5a5;
+  --color-accent-400: #d05656;
+  --color-accent-500: #a62828;
+  --color-accent-600: #7a1c1c;
+
+  /* Gold / mustard */
+  --color-gold-400: #e6c565;
+  --color-gold-500: #d4a12a;
+  --color-gold-600: #a07a18;
+
+  /* Teal accent (old poster green) */
+  --color-teal-500: #3e8078;
+
+  /* Status */
+  --color-success: #4d8a4d;
+  --color-warning: #d4a12a;
+  --color-danger: #a62828;
+
+  /* Fonts wired from layout.tsx */
+  --font-display: var(--font-marquee), "Georgia", serif;
+  --font-serif: var(--font-serif), "Georgia", serif;
+  --font-mono: var(--font-typewriter), "Courier New", monospace;
+  --font-condensed: var(--font-condensed), "Impact", sans-serif;
 }
 
 body {
-  background-color: var(--color-cinema-950);
-  color: #e0ecfa;
-  font-family: system-ui, -apple-system, sans-serif;
+  background-color: var(--color-cinema-50);
+  color: var(--color-cinema-900);
+  font-family: var(--font-serif);
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(166, 40, 40, 0.06), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(212, 161, 42, 0.05), transparent 50%);
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-cinema-900);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-cinema-700);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-cinema-600);
+/* ─── Paper texture (subtle) ───────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.4  0 0 0 0 0.25  0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E");
 }
 
-/* Film grain overlay (subtle) */
+/* ─── Film grain (stronger, on top) ────────────────────── */
 .film-grain::after {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.03;
+  inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   z-index: 9999;
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 0.8s steps(3) infinite;
+}
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-1%, 1%); }
+  66% { transform: translate(1%, -1%); }
+}
+
+/* ─── Marquee / ticket utilities ───────────────────────── */
+.font-marquee {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+.font-condensed {
+  font-family: var(--font-condensed);
+  letter-spacing: 0.08em;
+}
+.font-typewriter {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Double-stroke marquee heading */
+.marquee-title {
+  font-family: var(--font-display);
+  color: var(--color-gold-500);
+  text-shadow:
+    2px 2px 0 var(--color-accent-600),
+    4px 4px 0 var(--color-cinema-900),
+    0 0 18px rgba(230, 197, 101, 0.25);
+}
+
+/* Ticket stub — jagged top/bottom */
+.ticket {
+  --scallop: 10px;
+  background: var(--color-cinema-50);
+  border: 2px solid var(--color-cinema-800);
+  position: relative;
+  -webkit-mask:
+    radial-gradient(var(--scallop) at var(--scallop) var(--scallop), transparent 98%, #000 100%)
+      top left / calc(var(--scallop) * 2) calc(var(--scallop) * 2) repeat-x,
+    radial-gradient(var(--scallop) at var(--scallop) 0, transparent 98%, #000 100%)
+      bottom left / calc(var(--scallop) * 2) calc(var(--scallop) * 2) repeat-x,
+    linear-gradient(#000 0 0) center / calc(100% - 0) calc(100% - 0) no-repeat;
+  -webkit-mask-composite: source-over;
+}
+
+/* Frame border — double-stroke poster style */
+.poster-frame {
+  border: 2px solid var(--color-cinema-800);
+  box-shadow:
+    0 0 0 4px var(--color-cinema-50),
+    0 0 0 6px var(--color-cinema-800),
+    8px 8px 0 var(--color-cinema-900);
+}
+
+/* Marquee-lit border with bulbs */
+.marquee-border {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  border: 2px solid var(--color-cinema-800);
+  background: var(--color-cinema-50);
+}
+.marquee-border::before,
+.marquee-border::after {
+  content: "● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ●";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  color: var(--color-gold-500);
+  font-size: 0.7rem;
+  letter-spacing: 0.4rem;
+  text-shadow: 0 0 6px var(--color-gold-400);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-border::before { top: -0.55rem; }
+.marquee-border::after  { bottom: -0.55rem; }
+
+/* Film strip (perforations on left + right) */
+.film-strip {
+  padding: 0.5rem 1.75rem;
+  background:
+    linear-gradient(var(--color-cinema-900) 0 0) content-box,
+    repeating-linear-gradient(
+      to bottom,
+      var(--color-cinema-50) 0 8px,
+      transparent 8px 16px
+    ) left / 12px 100% no-repeat,
+    repeating-linear-gradient(
+      to bottom,
+      var(--color-cinema-50) 0 8px,
+      transparent 8px 16px
+    ) right / 12px 100% no-repeat,
+    var(--color-cinema-900);
+  color: var(--color-cinema-50);
+  background-color: var(--color-cinema-900);
+}
+
+/* Dashed divider w/ asterisk */
+.divider-stars {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-cinema-700);
+  font-family: var(--font-condensed);
+}
+.divider-stars::before,
+.divider-stars::after {
+  content: "";
+  flex: 1;
+  border-top: 1px dashed currentColor;
+}
+
+/* Buttons — ticket-stub primary */
+.btn-ticket {
+  font-family: var(--font-condensed);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--color-accent-500);
+  color: var(--color-cinema-50);
+  border: 2px solid var(--color-cinema-900);
+  box-shadow: 4px 4px 0 var(--color-cinema-900);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.2s ease;
+}
+.btn-ticket:hover {
+  background: var(--color-accent-400);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--color-cinema-900);
+}
+.btn-ticket:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--color-cinema-900);
+}
+
+/* ─── Custom scrollbar ─────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cinema-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-cinema-700);
+  border-radius: 0;
+  border: 2px solid var(--color-cinema-100);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-500);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-gold-500);
+  color: var(--color-cinema-900);
 }

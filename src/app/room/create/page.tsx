@@ -150,75 +150,82 @@ export default function CreateRoomPage() {
         >
           <Card>
             <CardHeader className="text-center">
-              <div className="w-14 h-14 rounded-xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-7 h-7 text-accent-400" />
+              <div className="font-condensed uppercase tracking-[0.3em] text-accent-500 text-xs mb-2">
+                · Box Office ·
               </div>
-              <CardTitle className="text-2xl">Create a Room</CardTitle>
+              <div className="w-14 h-14 bg-accent-500 border-2 border-cinema-900 shadow-[3px_3px_0_var(--color-cinema-900)] flex items-center justify-center mx-auto mb-3">
+                <Film className="w-7 h-7 text-cinema-50" strokeWidth={2.5} />
+              </div>
+              <CardTitle>Open a New Showing</CardTitle>
               <CardDescription>
-                Start a movie night session for your group
+                Set the scene — then send tickets to your friends.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreate} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-cinema-300 mb-2">
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
                     Your Name *
                   </label>
                   <Input
-                    placeholder="Enter your name"
+                    placeholder="Name on the marquee"
                     value={hostName}
                     onChange={(e) => setHostName(e.target.value)}
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-cinema-300 mb-2">
-                    Room Name (optional)
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
+                    Showing Title (optional)
                   </label>
                   <Input
-                    placeholder="e.g., Friday Night Movies"
+                    placeholder="e.g. Friday Night Fright Fest"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-cinema-300 mb-2">
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
                     Picking Mode
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setMode("DISCOVER")}
-                      className={`rounded-xl border p-4 text-left transition ${
+                      className={`border-2 p-4 text-left transition ${
                         mode === "DISCOVER"
-                          ? "border-accent-500 bg-accent-500/10"
-                          : "border-cinema-700/50 hover:border-cinema-600"
+                          ? "border-cinema-900 bg-gold-400 shadow-[3px_3px_0_var(--color-cinema-900)]"
+                          : "border-cinema-900/40 bg-cinema-50 hover:border-cinema-900"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="w-4 h-4 text-accent-400" />
-                        <span className="font-semibold text-cinema-100">Discover</span>
+                        <Sparkles className="w-4 h-4 text-cinema-900" strokeWidth={2.5} />
+                        <span className="font-condensed uppercase tracking-widest text-sm text-cinema-900">
+                          Discover
+                        </span>
                       </div>
-                      <p className="text-xs text-cinema-400">
-                        We'll find movies based on the group's survey answers.
+                      <p className="font-typewriter text-xs text-cinema-800">
+                        We pick from every movie on the reel.
                       </p>
                     </button>
                     <button
                       type="button"
                       onClick={() => setMode("SHORTLIST")}
-                      className={`rounded-xl border p-4 text-left transition ${
+                      className={`border-2 p-4 text-left transition ${
                         mode === "SHORTLIST"
-                          ? "border-accent-500 bg-accent-500/10"
-                          : "border-cinema-700/50 hover:border-cinema-600"
+                          ? "border-cinema-900 bg-gold-400 shadow-[3px_3px_0_var(--color-cinema-900)]"
+                          : "border-cinema-900/40 bg-cinema-50 hover:border-cinema-900"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <Film className="w-4 h-4 text-accent-400" />
-                        <span className="font-semibold text-cinema-100">Shortlist</span>
+                        <Film className="w-4 h-4 text-cinema-900" strokeWidth={2.5} />
+                        <span className="font-condensed uppercase tracking-widest text-sm text-cinema-900">
+                          Shortlist
+                        </span>
                       </div>
-                      <p className="text-xs text-cinema-400">
-                        Pick 2–15 movies; the group's answers decide which.
+                      <p className="font-typewriter text-xs text-cinema-800">
+                        You pick the reels; we pick the winner.
                       </p>
                     </button>
                   </div>
@@ -234,16 +241,16 @@ export default function CreateRoomPage() {
                       className="space-y-3 overflow-hidden"
                     >
                       <div>
-                        <label className="block text-sm font-medium text-cinema-300 mb-2">
-                          Shortlist{" "}
-                          <span className="text-cinema-500">
+                        <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
+                          Your Reel{" "}
+                          <span className="text-cinema-700/70">
                             ({candidates.length}/15)
                           </span>
                         </label>
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cinema-500 pointer-events-none" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cinema-700 pointer-events-none" />
                           <Input
-                            placeholder="Search for a movie…"
+                            placeholder="Search the archives…"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             className="pl-9"
@@ -251,31 +258,31 @@ export default function CreateRoomPage() {
                         </div>
 
                         {results.length > 0 && (
-                          <div className="mt-2 rounded-xl border border-cinema-700/50 bg-cinema-900/80 max-h-64 overflow-y-auto">
+                          <div className="mt-2 border-2 border-cinema-900 bg-cinema-50 max-h-64 overflow-y-auto">
                             {results.map((r) => (
                               <button
                                 type="button"
                                 key={r.id}
                                 onClick={() => addCandidate(r)}
-                                className="w-full flex items-center gap-3 p-2 hover:bg-cinema-800/60 text-left"
+                                className="w-full flex items-center gap-3 p-2 hover:bg-gold-400 text-left border-b border-dashed border-cinema-800/30 last:border-b-0"
                               >
                                 {r.posterPath ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img
                                     src={`https://image.tmdb.org/t/p/w92${r.posterPath}`}
                                     alt=""
-                                    className="w-10 h-14 object-cover rounded"
+                                    className="w-10 h-14 object-cover border border-cinema-900"
                                   />
                                 ) : (
-                                  <div className="w-10 h-14 bg-cinema-800 rounded flex items-center justify-center">
-                                    <Film className="w-4 h-4 text-cinema-600" />
+                                  <div className="w-10 h-14 bg-cinema-100 border border-cinema-900 flex items-center justify-center">
+                                    <Film className="w-4 h-4 text-cinema-700" />
                                   </div>
                                 )}
                                 <div className="min-w-0 flex-1">
-                                  <div className="text-sm text-cinema-100 truncate">
+                                  <div className="font-serif text-sm text-cinema-900 truncate">
                                     {r.title}
                                   </div>
-                                  <div className="text-xs text-cinema-500">
+                                  <div className="font-typewriter text-xs text-cinema-700">
                                     {r.year || "—"}
                                     {r.voteAverage
                                       ? ` · ★ ${r.voteAverage.toFixed(1)}`
@@ -287,7 +294,9 @@ export default function CreateRoomPage() {
                           </div>
                         )}
                         {searching && (
-                          <p className="text-xs text-cinema-500 mt-1">Searching…</p>
+                          <p className="font-typewriter text-xs text-cinema-700 mt-1">
+                            Searching the archive…
+                          </p>
                         )}
                       </div>
 
@@ -296,32 +305,32 @@ export default function CreateRoomPage() {
                           {candidates.map((c) => (
                             <li
                               key={c.tmdbMovieId}
-                              className="flex items-center gap-3 rounded-lg border border-cinema-700/50 bg-cinema-900/50 p-2"
+                              className="flex items-center gap-3 border-2 border-cinema-900 bg-cinema-50 p-2 shadow-[2px_2px_0_var(--color-cinema-900)]"
                             >
                               {c.posterPath ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={`https://image.tmdb.org/t/p/w92${c.posterPath}`}
                                   alt=""
-                                  className="w-8 h-12 object-cover rounded"
+                                  className="w-8 h-12 object-cover border border-cinema-900"
                                 />
                               ) : (
-                                <div className="w-8 h-12 bg-cinema-800 rounded flex items-center justify-center">
-                                  <Film className="w-3 h-3 text-cinema-600" />
+                                <div className="w-8 h-12 bg-cinema-100 border border-cinema-900 flex items-center justify-center">
+                                  <Film className="w-3 h-3 text-cinema-700" />
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="text-sm text-cinema-100 truncate">
+                                <div className="font-serif text-sm text-cinema-900 truncate">
                                   {c.title}
                                 </div>
-                                <div className="text-xs text-cinema-500">
+                                <div className="font-typewriter text-xs text-cinema-700">
                                   {c.releaseYear || "—"}
                                 </div>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => removeCandidate(c.tmdbMovieId)}
-                                className="p-1 text-cinema-500 hover:text-danger"
+                                className="p-1 text-cinema-700 hover:text-accent-500"
                                 aria-label={`Remove ${c.title}`}
                               >
                                 <X className="w-4 h-4" />
@@ -335,7 +344,9 @@ export default function CreateRoomPage() {
                 </AnimatePresence>
 
                 {error && (
-                  <p className="text-danger text-sm text-center">{error}</p>
+                  <p className="font-typewriter text-danger text-sm text-center">
+                    {error}
+                  </p>
                 )}
 
                 <Button
@@ -347,12 +358,12 @@ export default function CreateRoomPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Creating...
+                      Opening the Doors…
                     </>
                   ) : (
                     <>
                       <Users className="w-5 h-5" />
-                      Create Room
+                      Open the Doors
                     </>
                   )}
                 </Button>

@@ -9,11 +9,7 @@ function createPrismaClient(): PrismaClient {
   const tursoUrl = process.env.TURSO_DATABASE_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  console.error("[prisma] TURSO_DATABASE_URL present:", !!tursoUrl, "len:", tursoUrl?.length ?? 0);
-  console.error("[prisma] TURSO_AUTH_TOKEN present:", !!tursoToken, "len:", tursoToken?.length ?? 0);
-
   if (tursoUrl) {
-    console.error("[prisma] Using Turso adapter");
     const adapter = new PrismaLibSQL({
       url: tursoUrl,
       authToken: tursoToken,
@@ -21,7 +17,6 @@ function createPrismaClient(): PrismaClient {
     return new PrismaClient({ adapter });
   }
 
-  console.error("[prisma] FALLING BACK to local SQLite (no TURSO_DATABASE_URL set)");
   return new PrismaClient();
 }
 
