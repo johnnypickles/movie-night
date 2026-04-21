@@ -350,19 +350,20 @@ function ProfileHeader({ user, onUpdated }: ProfileHeaderProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Image must be under 2MB");
+    if (file.size > 20 * 1024 * 1024) {
+      setError("Image must be under 20MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(typeof reader.result === "string" ? reader.result : null);
+    try {
+      const resized = await resizeImage(file, 512, 0.85);
+      setImage(resized);
       setError("");
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setError("Couldn't read that image. Try a different one.");
+    }
   }
 
   async function save() {
@@ -504,5 +505,51 @@ function ProfileHeader({ user, onUpdated }: ProfileHeaderProps) {
       </div>
     </div>
   );
+}
+
+// Resize any image to a square max `size` px, exported as JPEG data URI.
+// Uses createImageBitmap (handles HEIC on Safari/iOS) with URL.createObjectURL fallback.
+async function resizeImage(
+  file: File,
+  size: number,
+  quality: number
+): Promise<string> {
+  const bitmap = await loadBitmap(file);
+  const scale = Math.min(1, size / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas unsupported");
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  // Safari sometimes returns a ReadableStream-backed ImageBitmap; release it.
+  if ("close" in bitmap) (bitmap as ImageBitmap).close?.();
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
+  if (typeof createImageBitmap === "function") {
+    try {
+      return await createImageBitmap(file);
+    } catch {
+      // fall through to <img>
+    }
+  }
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image decode failed"));
+    };
+    img.src = url;
+  });
 }
 
