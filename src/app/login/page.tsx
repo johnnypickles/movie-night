@@ -152,24 +152,14 @@ export default function LoginPage() {
                   />
                 </div>
                 <div>
-                  <div className="flex items-baseline justify-between mb-2">
-                    <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800">
-                      Password{" "}
-                      {isSignup && (
-                        <span className="text-cinema-700/60 normal-case tracking-normal font-typewriter">
-                          (8+ chars)
-                        </span>
-                      )}
-                    </label>
-                    {!isSignup && (
-                      <Link
-                        href="/forgot-password"
-                        className="font-typewriter text-xs text-accent-500 hover:text-accent-600 normal-case tracking-normal"
-                      >
-                        Forgot?
-                      </Link>
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
+                    Password{" "}
+                    {isSignup && (
+                      <span className="text-cinema-700/60 normal-case tracking-normal font-typewriter">
+                        (8+ chars)
+                      </span>
                     )}
-                  </div>
+                  </label>
                   <Input
                     type="password"
                     placeholder="••••••••"
@@ -180,6 +170,15 @@ export default function LoginPage() {
                     }
                   />
                 </div>
+
+                {!isSignup && (
+                  <Link
+                    href="/forgot-password"
+                    className="block text-center font-typewriter text-sm text-accent-500 hover:text-accent-600"
+                  >
+                    Forgot your password?
+                  </Link>
+                )}
 
                 {error && (
                   <p className="font-typewriter text-danger text-sm text-center">
