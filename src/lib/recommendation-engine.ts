@@ -51,6 +51,22 @@ export function aggregatePreferences(
     if (survey.noHorror) excludeGenres.add(27); // Horror
   }
 
+  // Max certification: strictest wins. null means "no restriction".
+  const CERT_ORDER: Record<"G" | "PG" | "PG-13" | "R", number> = {
+    G: 0,
+    PG: 1,
+    "PG-13": 2,
+    R: 3,
+  };
+  let strictestCert: "G" | "PG" | "PG-13" | "R" | null = null;
+  for (const s of surveys) {
+    const c = s.maxCertification;
+    if (!c) continue;
+    if (!strictestCert || CERT_ORDER[c] < CERT_ORDER[strictestCert]) {
+      strictestCert = c;
+    }
+  }
+
   // Normalize genre scores by participant count
   for (const [id, score] of genreScores) {
     genreScores.set(id, score / count);
@@ -80,6 +96,7 @@ export function aggregatePreferences(
     favoriteMovieIds: [...new Set(favoriteMovieIds)],
     watchedMovieIds,
     requireEnglish,
+    maxCertification: strictestCert,
     participantCount: count,
   };
 }
@@ -112,6 +129,7 @@ export async function generateCandidates(
     minRating: prefs.minRating,
     language: prefs.requireEnglish ? "en" : undefined,
     excludeGenres: [...prefs.excludeGenres],
+    maxCertification: prefs.maxCertification ?? undefined,
   };
 
   // Run parallel TMDB queries

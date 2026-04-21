@@ -51,6 +51,7 @@ export async function GET(
       noBlackWhite: s.noBlackWhite,
       noAnimation: s.noAnimation,
       noHorror: s.noHorror,
+      maxCertification: s.maxCertification,
     },
   });
 }
@@ -106,6 +107,7 @@ export async function POST(
       noBlackWhite: surveyData.noBlackWhite ?? false,
       noAnimation: surveyData.noAnimation ?? false,
       noHorror: surveyData.noHorror ?? false,
+      maxCertification: surveyData.maxCertification ?? null,
       wildCard: surveyData.wildCard ?? null,
     };
 

@@ -1,5 +1,8 @@
 import { type Mood } from "@/lib/survey-weights";
 
+// Max MPAA rating to include. null = no restriction.
+export type MaxCertification = "G" | "PG" | "PG-13" | "R" | null;
+
 export interface SurveyData {
   mood: Mood;
   vibeWords: string[];
@@ -14,6 +17,7 @@ export interface SurveyData {
   noBlackWhite: boolean;
   noAnimation: boolean;
   noHorror: boolean;
+  maxCertification: MaxCertification;
   wildCard: string | null;
 }
 

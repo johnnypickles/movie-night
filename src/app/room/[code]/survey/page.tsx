@@ -10,11 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MOOD_LABELS, GENRE_LABELS, type Mood } from "@/lib/survey-weights";
-import { VIBE_WORDS } from "@/types/survey";
+import { VIBE_WORDS, type MaxCertification } from "@/types/survey";
 import { useTmdbSearch } from "@/hooks/use-tmdb-search";
 import { tmdb } from "@/lib/tmdb";
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 interface FavoriteMovie {
   id: number;
@@ -47,6 +47,8 @@ export default function SurveyPage() {
   const [noBlackWhite, setNoBlackWhite] = useState(false);
   const [noAnimation, setNoAnimation] = useState(false);
   const [noHorror, setNoHorror] = useState(false);
+  const [maxCertification, setMaxCertification] =
+    useState<MaxCertification>(null);
   const [isEdit, setIsEdit] = useState(false);
 
   // Load existing response (if any) so Edit-My-Answers pre-fills.
@@ -77,6 +79,15 @@ export default function SurveyPage() {
         if (typeof r.noBlackWhite === "boolean") setNoBlackWhite(r.noBlackWhite);
         if (typeof r.noAnimation === "boolean") setNoAnimation(r.noAnimation);
         if (typeof r.noHorror === "boolean") setNoHorror(r.noHorror);
+        if (
+          r.maxCertification === null ||
+          r.maxCertification === "G" ||
+          r.maxCertification === "PG" ||
+          r.maxCertification === "PG-13" ||
+          r.maxCertification === "R"
+        ) {
+          setMaxCertification(r.maxCertification);
+        }
 
         // Rehydrate favorites with details (best-effort)
         if (Array.isArray(r.favoriteMovieIds) && r.favoriteMovieIds.length > 0) {
@@ -183,6 +194,7 @@ export default function SurveyPage() {
             noBlackWhite,
             noAnimation,
             noHorror,
+            maxCertification,
           },
         }),
       });
@@ -624,6 +636,76 @@ export default function SurveyPage() {
                       </div>
                     </button>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 7: Content Rating */}
+            {step === 7 && (
+              <div>
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
+                  Keep it PG?
+                </h2>
+                <p className="text-cinema-700 text-center mb-8">
+                  Cap the MPAA rating so everyone&apos;s comfortable.
+                  Strictest pick in the group wins.
+                </p>
+                <div className="space-y-3">
+                  {(
+                    [
+                      {
+                        value: "G",
+                        label: "Family-friendly",
+                        desc: "G only — squeaky clean.",
+                      },
+                      {
+                        value: "PG",
+                        label: "Mostly mild",
+                        desc: "G and PG — kid-safe with mild stuff.",
+                      },
+                      {
+                        value: "PG-13",
+                        label: "Teens & up",
+                        desc: "Up to PG-13 — teen-appropriate.",
+                      },
+                      {
+                        value: "R",
+                        label: "Adults OK",
+                        desc: "Up to R — language, violence, adult themes.",
+                      },
+                      {
+                        value: null,
+                        label: "Anything goes",
+                        desc: "No cap — including NC-17 and unrated.",
+                      },
+                    ] as {
+                      value: MaxCertification;
+                      label: string;
+                      desc: string;
+                    }[]
+                  ).map((opt) => {
+                    const selected = maxCertification === opt.value;
+                    return (
+                      <button
+                        key={String(opt.value)}
+                        type="button"
+                        onClick={() => setMaxCertification(opt.value)}
+                        className={cn(
+                          "w-full text-left border-2 px-5 py-3 transition-all cursor-pointer",
+                          selected
+                            ? "border-cinema-900 bg-gold-400 shadow-[3px_3px_0_var(--color-cinema-900)]"
+                            : "border-cinema-900/30 bg-cinema-50 hover:border-cinema-900"
+                        )}
+                      >
+                        <div className="font-condensed uppercase tracking-widest text-sm text-cinema-900">
+                          {opt.label}
+                        </div>
+                        <div className="font-typewriter text-xs text-cinema-800 mt-0.5">
+                          {opt.desc}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

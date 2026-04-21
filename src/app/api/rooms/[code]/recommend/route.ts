@@ -103,6 +103,7 @@ export async function POST(
           noBlackWhite: s.noBlackWhite,
           noAnimation: s.noAnimation,
           noHorror: s.noHorror,
+          maxCertification: (s.maxCertification ?? null) as SurveyData["maxCertification"],
           wildCard: s.wildCard,
         };
       });

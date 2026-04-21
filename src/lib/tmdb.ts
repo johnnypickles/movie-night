@@ -42,6 +42,10 @@ export interface DiscoverParams {
   sortBy?: string;
   page?: number;
   excludeGenres?: number[];
+  /** MPAA code: "G" | "PG" | "PG-13" | "R". Filters to this or stricter. */
+  maxCertification?: string;
+  /** Country code for certification lookup (default US). */
+  certificationCountry?: string;
 }
 
 // Simple in-memory cache
@@ -115,6 +119,11 @@ export const tmdb = {
     }
     if (params.language) {
       queryParams.with_original_language = params.language;
+    }
+    if (params.maxCertification) {
+      queryParams.certification_country =
+        params.certificationCountry ?? "US";
+      queryParams["certification.lte"] = params.maxCertification;
     }
 
     return tmdbFetch<TMDBResponse>("/discover/movie", queryParams);

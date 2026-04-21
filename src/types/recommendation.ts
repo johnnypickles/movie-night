@@ -25,5 +25,7 @@ export interface GroupPreferences {
   favoriteMovieIds: number[];
   watchedMovieIds: Set<number>;
   requireEnglish: boolean;
+  /** Strictest max-cert across the group, or null for no restriction. */
+  maxCertification: "G" | "PG" | "PG-13" | "R" | null;
   participantCount: number;
 }
