@@ -205,10 +205,10 @@ export default function HistoryPage() {
                                     >
                                       <Star
                                         className={cn(
-                                          "w-5 h-5 transition-colors",
+                                          "w-6 h-6 transition-colors",
                                           j < ratingValue
-                                            ? "text-accent-400 fill-accent-400"
-                                            : "text-cinema-600 hover:text-cinema-700"
+                                            ? "text-gold-500 fill-gold-500"
+                                            : "text-cinema-700/40 hover:text-gold-400"
                                         )}
                                       />
                                     </button>
@@ -217,12 +217,13 @@ export default function HistoryPage() {
                                     {ratingValue}/10
                                   </span>
                                 </div>
-                                <input
-                                  type="text"
+                                <textarea
                                   placeholder="Add a comment (optional)"
                                   value={ratingComment}
                                   onChange={(e) => setRatingComment(e.target.value)}
-                                  className="w-full text-sm bg-cinema-800 border border-cinema-700 rounded-lg px-3 py-1.5 text-cinema-900 placeholder:text-cinema-700"
+                                  rows={2}
+                                  maxLength={500}
+                                  className="w-full text-sm bg-cinema-50 border-2 border-cinema-900 px-3 py-2 font-typewriter text-cinema-900 placeholder:text-cinema-700/60 focus:outline-none focus:ring-2 focus:ring-gold-500 resize-none"
                                 />
                                 <div className="flex gap-2">
                                   <Button

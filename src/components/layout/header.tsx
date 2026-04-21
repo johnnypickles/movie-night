@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { History, Users, LogOut, Ticket } from "lucide-react";
+import { History, Users, Ticket } from "lucide-react";
 import { useSession } from "@/hooks/use-session";
 
 export function Header() {
@@ -53,18 +53,26 @@ export function Header() {
                 <span className="hidden sm:inline">Profile</span>
               </Link>
               <div className="flex items-center gap-2 ml-2 pl-3 border-l-2 border-cinema-900">
-                <div className="w-7 h-7 bg-gold-500 border-2 border-cinema-900 flex items-center justify-center text-xs font-bold text-cinema-900 font-condensed">
-                  {user.name?.charAt(0).toUpperCase() ?? "?"}
-                </div>
+                {user.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.image}
+                    alt=""
+                    className="w-7 h-7 rounded-full object-cover border-2 border-cinema-900"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-gold-500 border-2 border-cinema-900 flex items-center justify-center text-xs font-bold text-cinema-900 font-condensed">
+                    {user.name?.charAt(0).toUpperCase() ?? "?"}
+                  </div>
+                )}
                 <span className="text-cinema-900 hidden sm:inline max-w-[80px] truncate font-serif normal-case tracking-normal">
                   {user.name}
                 </span>
                 <button
                   onClick={logout}
-                  className="text-cinema-700 hover:text-accent-500 transition-colors cursor-pointer"
-                  title="Log out"
+                  className="text-cinema-700 hover:text-accent-500 transition-colors cursor-pointer font-condensed uppercase tracking-widest text-xs px-2 py-1"
                 >
-                  <LogOut className="w-4 h-4" />
+                  Log Out
                 </button>
               </div>
             </>

@@ -296,10 +296,10 @@ export default function SurveyPage() {
                         key={word}
                         onClick={() => toggleVibe(word)}
                         className={cn(
-                          "px-3 py-1.5 rounded-full text-sm transition-all cursor-pointer",
+                          "px-3 py-1.5 rounded-full font-condensed uppercase tracking-widest text-xs transition-all cursor-pointer border-2",
                           vibeWords.includes(word)
-                            ? "bg-accent-500/20 text-accent-400 border border-accent-500/50"
-                            : "bg-cinema-800 text-cinema-700 border border-cinema-900/30 hover:border-cinema-900"
+                            ? "bg-accent-500 text-cinema-50 border-cinema-900 shadow-[2px_2px_0_var(--color-cinema-900)]"
+                            : "bg-cinema-50 text-cinema-900 border-cinema-900 hover:bg-gold-400"
                         )}
                       >
                         {word}
