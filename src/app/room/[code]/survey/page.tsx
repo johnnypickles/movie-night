@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Loader2, Search } from "lucide-react";
@@ -47,6 +47,65 @@ export default function SurveyPage() {
   const [noBlackWhite, setNoBlackWhite] = useState(false);
   const [noAnimation, setNoAnimation] = useState(false);
   const [noHorror, setNoHorror] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+
+  // Load existing response (if any) so Edit-My-Answers pre-fills.
+  useEffect(() => {
+    const participantId = localStorage.getItem(`room-${code}-userId`);
+    if (!participantId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/rooms/${code}/survey?participantId=${encodeURIComponent(
+            participantId
+          )}`
+        );
+        const data = await res.json();
+        if (cancelled || !data?.response) return;
+        const r = data.response;
+        setIsEdit(true);
+        if (r.mood) setMood(r.mood);
+        if (Array.isArray(r.vibeWords)) setVibeWords(r.vibeWords);
+        if (Array.isArray(r.genreLikes)) setGenreLikes(r.genreLikes);
+        if (Array.isArray(r.genreDislikes)) setGenreDislikes(r.genreDislikes);
+        if (typeof r.decadeMin === "number") setDecadeMin(r.decadeMin);
+        if (typeof r.decadeMax === "number") setDecadeMax(r.decadeMax);
+        if (typeof r.maxRuntime === "number") setMaxRuntime(r.maxRuntime);
+        if (typeof r.minRating === "number") setMinRating(r.minRating);
+        if (typeof r.noSubtitles === "boolean") setNoSubtitles(r.noSubtitles);
+        if (typeof r.noBlackWhite === "boolean") setNoBlackWhite(r.noBlackWhite);
+        if (typeof r.noAnimation === "boolean") setNoAnimation(r.noAnimation);
+        if (typeof r.noHorror === "boolean") setNoHorror(r.noHorror);
+
+        // Rehydrate favorites with details (best-effort)
+        if (Array.isArray(r.favoriteMovieIds) && r.favoriteMovieIds.length > 0) {
+          const details = await Promise.all(
+            r.favoriteMovieIds.slice(0, 5).map(async (id: number) => {
+              try {
+                const d = await tmdb.getMovieDetails(id);
+                return {
+                  id: d.id,
+                  title: d.title,
+                  year: d.release_date ? d.release_date.slice(0, 4) : null,
+                  posterPath: d.poster_path,
+                };
+              } catch {
+                return null;
+              }
+            })
+          );
+          if (cancelled) return;
+          setFavorites(details.filter((d): d is FavoriteMovie => d !== null));
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
 
   const { results: searchResults, loading: searchLoading } =
     useTmdbSearch(movieSearch);
@@ -170,7 +229,7 @@ export default function SurveyPage() {
       <main className="flex-1 max-w-2xl mx-auto px-4 py-8 w-full">
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="flex justify-between text-xs text-cinema-400 mb-2">
+          <div className="flex justify-between text-xs text-cinema-700 mb-2">
             <span>Step {step} of {TOTAL_STEPS}</span>
             <span>{Math.round((step / TOTAL_STEPS) * 100)}%</span>
           </div>
@@ -197,10 +256,10 @@ export default function SurveyPage() {
             {/* Step 1: Mood */}
             {step === 1 && (
               <div>
-                <h2 className="text-2xl font-bold text-cinema-100 mb-2 text-center">
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
                   What&apos;s your vibe tonight?
                 </h2>
-                <p className="text-cinema-400 text-center mb-8">
+                <p className="text-cinema-700 text-center mb-8">
                   Pick the mood that matches how you&apos;re feeling
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -213,12 +272,12 @@ export default function SurveyPage() {
                           "rounded-2xl border-2 p-5 text-center transition-all duration-200 cursor-pointer hover:scale-[1.02]",
                           mood === key
                             ? "border-accent-500 bg-accent-500/10 shadow-lg shadow-accent-500/10"
-                            : "border-cinema-700 bg-cinema-900/50 hover:border-cinema-500"
+                            : "border-cinema-900/30 bg-cinema-50 hover:border-cinema-900"
                         )}
                       >
                         <div className="text-3xl mb-2">{emoji}</div>
-                        <div className="font-semibold text-cinema-100">{label}</div>
-                        <div className="text-xs text-cinema-400 mt-1">
+                        <div className="font-semibold text-cinema-900">{label}</div>
+                        <div className="text-xs text-cinema-700 mt-1">
                           {description}
                         </div>
                       </button>
@@ -228,7 +287,7 @@ export default function SurveyPage() {
 
                 {/* Vibe words */}
                 <div className="mt-8">
-                  <p className="text-sm text-cinema-400 mb-3 text-center">
+                  <p className="text-sm text-cinema-700 mb-3 text-center">
                     Pick up to 5 vibe words (optional)
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center">
@@ -240,7 +299,7 @@ export default function SurveyPage() {
                           "px-3 py-1.5 rounded-full text-sm transition-all cursor-pointer",
                           vibeWords.includes(word)
                             ? "bg-accent-500/20 text-accent-400 border border-accent-500/50"
-                            : "bg-cinema-800 text-cinema-400 border border-cinema-700 hover:border-cinema-500"
+                            : "bg-cinema-800 text-cinema-700 border border-cinema-900/30 hover:border-cinema-900"
                         )}
                       >
                         {word}
@@ -254,10 +313,10 @@ export default function SurveyPage() {
             {/* Step 2: Genres */}
             {step === 2 && (
               <div>
-                <h2 className="text-2xl font-bold text-cinema-100 mb-2 text-center">
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
                   Genre Preferences
                 </h2>
-                <p className="text-cinema-400 text-center mb-6">
+                <p className="text-cinema-700 text-center mb-6">
                   Tap to like (green) or tap again to dislike (red). Leave unselected for no preference.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -283,7 +342,7 @@ export default function SurveyPage() {
                             ? "border-success bg-success/10 text-success"
                             : isDisliked
                             ? "border-danger bg-danger/10 text-danger"
-                            : "border-cinema-700 bg-cinema-900/50 text-cinema-300 hover:border-cinema-500"
+                            : "border-cinema-900/30 bg-cinema-50 text-cinema-800 hover:border-cinema-900"
                         )}
                       >
                         {isLiked && "✓ "}
@@ -299,10 +358,10 @@ export default function SurveyPage() {
             {/* Step 3: Era */}
             {step === 3 && (
               <div>
-                <h2 className="text-2xl font-bold text-cinema-100 mb-2 text-center">
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
                   How new should it be?
                 </h2>
-                <p className="text-cinema-400 text-center mb-8">
+                <p className="text-cinema-700 text-center mb-8">
                   Pick an era or leave blank for any time period
                 </p>
                 <div className="space-y-4">
@@ -324,10 +383,10 @@ export default function SurveyPage() {
                         "w-full rounded-xl border-2 px-6 py-4 text-left transition-all cursor-pointer",
                         decadeMin === era.min && decadeMax === era.max
                           ? "border-accent-500 bg-accent-500/10"
-                          : "border-cinema-700 bg-cinema-900/50 hover:border-cinema-500"
+                          : "border-cinema-900/30 bg-cinema-50 hover:border-cinema-900"
                       )}
                     >
-                      <span className="font-medium text-cinema-100">
+                      <span className="font-medium text-cinema-900">
                         {era.label}
                       </span>
                     </button>
@@ -339,17 +398,17 @@ export default function SurveyPage() {
             {/* Step 4: Runtime & Rating */}
             {step === 4 && (
               <div>
-                <h2 className="text-2xl font-bold text-cinema-100 mb-2 text-center">
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
                   Runtime & Quality
                 </h2>
-                <p className="text-cinema-400 text-center mb-8">
+                <p className="text-cinema-700 text-center mb-8">
                   Set your preferences for length and rating
                 </p>
 
                 <div className="space-y-8">
                   {/* Runtime */}
                   <div>
-                    <h3 className="font-semibold text-cinema-200 mb-4">
+                    <h3 className="font-semibold text-cinema-900 mb-4">
                       How long are you willing to sit?
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -366,7 +425,7 @@ export default function SurveyPage() {
                             "rounded-xl border-2 px-4 py-3 text-sm transition-all cursor-pointer",
                             maxRuntime === opt.value
                               ? "border-accent-500 bg-accent-500/10 text-accent-400"
-                              : "border-cinema-700 bg-cinema-900/50 text-cinema-300 hover:border-cinema-500"
+                              : "border-cinema-900/30 bg-cinema-50 text-cinema-800 hover:border-cinema-900"
                           )}
                         >
                           {opt.label}
@@ -377,7 +436,7 @@ export default function SurveyPage() {
 
                   {/* Rating */}
                   <div>
-                    <h3 className="font-semibold text-cinema-200 mb-4">
+                    <h3 className="font-semibold text-cinema-900 mb-4">
                       Quality threshold?
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -394,7 +453,7 @@ export default function SurveyPage() {
                             "rounded-xl border-2 px-4 py-3 text-sm transition-all cursor-pointer",
                             minRating === opt.value
                               ? "border-accent-500 bg-accent-500/10 text-accent-400"
-                              : "border-cinema-700 bg-cinema-900/50 text-cinema-300 hover:border-cinema-500"
+                              : "border-cinema-900/30 bg-cinema-50 text-cinema-800 hover:border-cinema-900"
                           )}
                         >
                           {opt.label}
@@ -409,10 +468,10 @@ export default function SurveyPage() {
             {/* Step 5: Favorite Movies */}
             {step === 5 && (
               <div>
-                <h2 className="text-2xl font-bold text-cinema-100 mb-2 text-center">
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
                   Favorite Movies
                 </h2>
-                <p className="text-cinema-400 text-center mb-6">
+                <p className="text-cinema-700 text-center mb-6">
                   Name 1-3 movies you love (optional). This helps our algorithm understand your taste.
                 </p>
 
@@ -439,7 +498,7 @@ export default function SurveyPage() {
                 {/* Search */}
                 {favorites.length < 3 && (
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cinema-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cinema-700" />
                     <Input
                       placeholder="Search for a movie..."
                       value={movieSearch}
@@ -449,14 +508,14 @@ export default function SurveyPage() {
 
                     {/* Search results dropdown */}
                     {movieSearch.length >= 2 && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-cinema-800 border border-cinema-700 rounded-xl overflow-hidden shadow-2xl z-10 max-h-64 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-cinema-100 border border-cinema-900/30 rounded-xl overflow-hidden shadow-2xl z-10 max-h-64 overflow-y-auto">
                         {searchLoading ? (
-                          <div className="p-4 text-center text-cinema-400">
+                          <div className="p-4 text-center text-cinema-700">
                             <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
                             Searching...
                           </div>
                         ) : searchResults.length === 0 ? (
-                          <div className="p-4 text-center text-cinema-500">
+                          <div className="p-4 text-center text-cinema-700">
                             No movies found
                           </div>
                         ) : (
@@ -471,7 +530,7 @@ export default function SurveyPage() {
                                   posterPath: movie.posterPath,
                                 })
                               }
-                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cinema-700 transition-colors text-left cursor-pointer"
+                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gold-400 transition-colors text-left cursor-pointer"
                             >
                               {movie.posterPath ? (
                                 <img
@@ -483,10 +542,10 @@ export default function SurveyPage() {
                                 <div className="w-8 h-12 rounded bg-cinema-700" />
                               )}
                               <div>
-                                <div className="text-sm font-medium text-cinema-100">
+                                <div className="text-sm font-medium text-cinema-900">
                                   {movie.title}
                                 </div>
-                                <div className="text-xs text-cinema-400">
+                                <div className="text-xs text-cinema-700">
                                   {movie.year} · ★ {movie.voteAverage.toFixed(1)}
                                 </div>
                               </div>
@@ -503,10 +562,10 @@ export default function SurveyPage() {
             {/* Step 6: Dealbreakers */}
             {step === 6 && (
               <div>
-                <h2 className="text-2xl font-bold text-cinema-100 mb-2 text-center">
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
                   Any Hard No&apos;s?
                 </h2>
-                <p className="text-cinema-400 text-center mb-8">
+                <p className="text-cinema-700 text-center mb-8">
                   These will be excluded from recommendations for the whole group
                 </p>
                 <div className="space-y-4">
@@ -539,13 +598,13 @@ export default function SurveyPage() {
                         "w-full flex items-center justify-between rounded-xl border-2 px-6 py-4 transition-all cursor-pointer",
                         item.value
                           ? "border-danger bg-danger/10"
-                          : "border-cinema-700 bg-cinema-900/50 hover:border-cinema-500"
+                          : "border-cinema-900/30 bg-cinema-50 hover:border-cinema-900"
                       )}
                     >
                       <span
                         className={cn(
                           "font-medium",
-                          item.value ? "text-danger" : "text-cinema-300"
+                          item.value ? "text-danger" : "text-cinema-800"
                         )}
                       >
                         {item.label}
@@ -593,12 +652,12 @@ export default function SurveyPage() {
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Submitting...
+                  {isEdit ? "Saving…" : "Submitting…"}
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  Submit Survey
+                  {isEdit ? "Save Changes" : "Submit Survey"}
                 </>
               )}
             </Button>

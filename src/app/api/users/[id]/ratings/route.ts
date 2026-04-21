@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
-// GET /api/users/[id]/ratings — list another user's ratings, but only if the
-// caller is that user or friends with them.
+// GET /api/users/[id]/ratings — friend-only: returns user + ratings if friends,
+// otherwise returns only the user's public identity so a friend-request flow
+// can prompt the caller to add them.
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,7 +16,17 @@ export async function GET(
     return NextResponse.json({ error: "Not logged in" }, { status: 401 });
   }
 
-  if (me.id !== targetId) {
+  const user = await prisma.user.findUnique({
+    where: { id: targetId },
+    select: { id: true, name: true, image: true },
+  });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const isSelf = me.id === targetId;
+  let isFriend = false;
+  if (!isSelf) {
     const friendship = await prisma.friendship.findFirst({
       where: {
         OR: [
@@ -24,15 +35,14 @@ export async function GET(
         ],
       },
     });
-    if (!friendship) {
-      return NextResponse.json(
-        { error: "You must be friends to view this user's ratings" },
-        { status: 403 }
-      );
-    }
+    isFriend = Boolean(friendship);
   }
 
-  const [ratings, history, user] = await Promise.all([
+  if (!isFriend && !isSelf) {
+    return NextResponse.json({ user, isFriend: false, ratings: [] });
+  }
+
+  const [ratings, history] = await Promise.all([
     prisma.movieRating.findMany({
       where: { userId: targetId },
       orderBy: { updatedAt: "desc" },
@@ -42,15 +52,7 @@ export async function GET(
       where: { userId: targetId },
       select: { tmdbMovieId: true, title: true, posterPath: true },
     }),
-    prisma.user.findUnique({
-      where: { id: targetId },
-      select: { id: true, name: true, image: true },
-    }),
   ]);
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
 
   const historyMap = new Map(history.map((h) => [h.tmdbMovieId, h]));
   const enriched = ratings.map((r) => {
@@ -65,5 +67,10 @@ export async function GET(
     };
   });
 
-  return NextResponse.json({ user, ratings: enriched });
+  return NextResponse.json({
+    user,
+    isFriend: true,
+    isSelf,
+    ratings: enriched,
+  });
 }

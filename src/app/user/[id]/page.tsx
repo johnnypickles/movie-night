@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Film, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, Star, Loader2, UserPlus, Check } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
@@ -31,42 +31,61 @@ export default function UserProfilePage() {
 
   const [friend, setFriend] = useState<FriendUser | null>(null);
   const [ratings, setRatings] = useState<FriendRating[]>([]);
+  const [isFriend, setIsFriend] = useState(false);
+  const [isSelf, setIsSelf] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [addedOk, setAddedOk] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!sessionLoading && !me) {
-      router.push("/login");
+      router.push(`/login?next=/user/${id}`);
     }
-  }, [me, sessionLoading, router]);
+  }, [me, sessionLoading, router, id]);
+
+  async function loadProfile() {
+    try {
+      const res = await fetch(`/api/users/${id}/ratings`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to load");
+        setLoading(false);
+        return;
+      }
+      setFriend(data.user);
+      setRatings(data.ratings);
+      setIsFriend(Boolean(data.isFriend));
+      setIsSelf(Boolean(data.isSelf));
+      setLoading(false);
+    } catch {
+      setError("Network error");
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (!me || !id) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/users/${id}/ratings`);
-        const data = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(data.error || "Failed to load ratings");
-          setLoading(false);
-          return;
-        }
-        setFriend(data.user);
-        setRatings(data.ratings);
-        setLoading(false);
-      } catch {
-        if (!cancelled) {
-          setError("Network error");
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, id]);
+
+  async function sendRequest() {
+    setAdding(true);
+    try {
+      const res = await fetch("/api/friends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ friendId: id }),
+      });
+      if (res.ok) {
+        setAddedOk(true);
+        await loadProfile();
+      }
+    } finally {
+      setAdding(false);
+    }
+  }
 
   if (sessionLoading || loading) {
     return (
@@ -89,7 +108,7 @@ export default function UserProfilePage() {
             Back
           </Button>
           <div className="bg-cinema-50 border-2 border-cinema-900 shadow-[6px_6px_0_var(--color-cinema-900)] p-8 text-center mt-6">
-            <p className="font-typewriter text-cinema-800">{error}</p>
+            <p className="font-typewriter text-cinema-900">{error}</p>
           </div>
         </main>
       </>
@@ -113,10 +132,10 @@ export default function UserProfilePage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push("/profile")}
+            onClick={() => router.back()}
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Profile
+            Back
           </Button>
 
           <div className="text-center mt-6 mb-8">
@@ -129,23 +148,56 @@ export default function UserProfilePage() {
             <h1 className="font-marquee text-3xl md:text-4xl text-cinema-900">
               {friend?.name || "Unknown"}
             </h1>
-            <p className="font-typewriter text-sm text-cinema-700 mt-2">
-              {ratings.length} {ratings.length === 1 ? "rating" : "ratings"}
-              {avg !== null && ` · avg ★ ${avg.toFixed(1)}/10`}
-            </p>
+            {(isFriend || isSelf) && (
+              <p className="font-typewriter text-sm text-cinema-800 mt-2">
+                {ratings.length}{" "}
+                {ratings.length === 1 ? "rating" : "ratings"}
+                {avg !== null && ` · avg ★ ${avg.toFixed(1)}/10`}
+              </p>
+            )}
+
+            {!isFriend && !isSelf && (
+              <div className="mt-6">
+                {addedOk ? (
+                  <p className="font-typewriter text-success inline-flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    Friends! Their ratings will appear here soon.
+                  </p>
+                ) : (
+                  <Button onClick={sendRequest} disabled={adding}>
+                    {adding ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Adding…
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        Add as Friend
+                      </>
+                    )}
+                  </Button>
+                )}
+                <p className="font-typewriter text-xs text-cinema-800 mt-3">
+                  You need to be friends to see ratings.
+                </p>
+              </div>
+            )}
           </div>
 
-          {ratings.length === 0 ? (
+          {(isFriend || isSelf) && ratings.length === 0 && (
             <div className="bg-cinema-50 border-2 border-cinema-900 shadow-[6px_6px_0_var(--color-cinema-900)] p-10 text-center">
               <Film
                 className="w-10 h-10 mx-auto mb-3 text-cinema-700"
                 strokeWidth={1.5}
               />
-              <p className="font-typewriter text-cinema-800">
+              <p className="font-typewriter text-cinema-900">
                 No ratings yet.
               </p>
             </div>
-          ) : (
+          )}
+
+          {(isFriend || isSelf) && ratings.length > 0 && (
             <ul className="space-y-3">
               {ratings.map((r) => (
                 <li
@@ -183,11 +235,11 @@ export default function UserProfilePage() {
                       </div>
                     </div>
                     {r.comment && (
-                      <p className="font-serif italic text-sm text-cinema-800 leading-snug">
+                      <p className="font-serif italic text-sm text-cinema-900 leading-snug">
                         &ldquo;{r.comment}&rdquo;
                       </p>
                     )}
-                    <p className="font-typewriter text-xs text-cinema-700 mt-1">
+                    <p className="font-typewriter text-xs text-cinema-800 mt-1">
                       {new Date(r.updatedAt).toLocaleDateString()}
                     </p>
                   </div>

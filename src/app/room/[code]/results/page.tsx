@@ -105,7 +105,7 @@ export default function ResultsPage() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="w-10 h-10 animate-spin text-accent-400 mx-auto mb-4" />
-            <p className="text-cinema-400">Loading recommendations...</p>
+            <p className="text-cinema-700">Loading recommendations...</p>
           </div>
         </main>
       </>
@@ -126,17 +126,17 @@ export default function ResultsPage() {
             <div className="w-16 h-16 rounded-2xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
               <Trophy className="w-8 h-8 text-accent-400" />
             </div>
-            <h1 className="text-3xl font-bold text-cinema-100 mb-2">
+            <h1 className="text-3xl font-bold text-cinema-900 mb-2">
               Your Movie Matches
             </h1>
-            <p className="text-cinema-400">
+            <p className="text-cinema-700">
               Based on everyone&apos;s preferences, here are your top picks
             </p>
           </div>
 
           {error ? (
             <div className="text-center py-12">
-              <p className="text-cinema-400 mb-4">{error}</p>
+              <p className="text-cinema-700 mb-4">{error}</p>
               <Link href={`/room/${code}`}>
                 <Button variant="secondary">
                   <ArrowLeft className="w-4 h-4" />
@@ -187,7 +187,7 @@ export default function ResultsPage() {
                                 "absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
                                 isTop
                                   ? "bg-accent-500 text-cinema-950"
-                                  : "bg-cinema-700 text-cinema-200"
+                                  : "bg-cinema-700 text-cinema-900"
                               )}
                             >
                               #{rec.rank}
@@ -198,10 +198,10 @@ export default function ResultsPage() {
                           <div className="flex-1 p-5">
                             <div className="flex items-start justify-between gap-3 mb-3">
                               <div>
-                                <h3 className="text-xl font-bold text-cinema-100">
+                                <h3 className="text-xl font-bold text-cinema-900">
                                   {rec.title}
                                 </h3>
-                                <div className="flex items-center gap-3 mt-1 text-sm text-cinema-400">
+                                <div className="flex items-center gap-3 mt-1 text-sm text-cinema-700">
                                   {rec.releaseYear && (
                                     <span className="flex items-center gap-1">
                                       <Calendar className="w-3.5 h-3.5" />
@@ -231,7 +231,7 @@ export default function ResultsPage() {
                                     ? "bg-success/10 text-success"
                                     : rec.matchScore >= 60
                                     ? "bg-accent-500/10 text-accent-400"
-                                    : "bg-cinema-700 text-cinema-300"
+                                    : "bg-cinema-700 text-cinema-800"
                                 )}
                               >
                                 {rec.matchScore}% match
@@ -243,7 +243,7 @@ export default function ResultsPage() {
                               {genreIds.slice(0, 4).map((gId) => (
                                 <span
                                   key={gId}
-                                  className="text-xs px-2 py-0.5 rounded-md bg-cinema-800 text-cinema-400"
+                                  className="text-xs px-2 py-0.5 rounded-md bg-cinema-800 text-cinema-700"
                                 >
                                   {GENRE_LABELS[gId] || gId}
                                 </span>
@@ -252,13 +252,13 @@ export default function ResultsPage() {
 
                             {/* Overview */}
                             {rec.overview && (
-                              <p className="text-sm text-cinema-400 mb-3 line-clamp-2">
+                              <p className="text-sm text-cinema-700 mb-3 line-clamp-2">
                                 {rec.overview}
                               </p>
                             )}
 
                             {/* Explanation */}
-                            <div className="bg-cinema-800/50 rounded-lg px-3 py-2 text-sm text-cinema-300">
+                            <div className="bg-cinema-800/50 rounded-lg px-3 py-2 text-sm text-cinema-800">
                               💡 {rec.explanation}
                             </div>
 

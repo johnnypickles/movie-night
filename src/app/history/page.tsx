@@ -80,7 +80,7 @@ export default function HistoryPage() {
       <>
         <Header />
         <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-cinema-400" />
+          <Loader2 className="w-8 h-8 animate-spin text-cinema-700" />
         </main>
       </>
     );
@@ -99,20 +99,20 @@ export default function HistoryPage() {
             <div className="w-14 h-14 rounded-xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
               <History className="w-7 h-7 text-accent-400" />
             </div>
-            <h1 className="text-3xl font-bold text-cinema-100">Watch History</h1>
-            <p className="text-cinema-400 mt-1">Movies you&apos;ve watched with your groups</p>
+            <h1 className="text-3xl font-bold text-cinema-900">Watch History</h1>
+            <p className="text-cinema-700 mt-1">Movies you&apos;ve watched with your groups</p>
           </div>
 
           {loading ? (
             <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-cinema-400 mx-auto" />
+              <Loader2 className="w-8 h-8 animate-spin text-cinema-700 mx-auto" />
             </div>
           ) : history.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <Film className="w-12 h-12 text-cinema-600 mx-auto mb-4" />
-                <p className="text-cinema-400 mb-4">No movies watched yet!</p>
-                <p className="text-cinema-500 text-sm mb-6">
+                <p className="text-cinema-700 mb-4">No movies watched yet!</p>
+                <p className="text-cinema-700 text-sm mb-6">
                   Create a room, take the survey, and mark a movie as watched from the results page.
                 </p>
                 <Button onClick={() => router.push("/room/create")} variant="secondary">
@@ -147,15 +147,15 @@ export default function HistoryPage() {
                             />
                           ) : (
                             <div className="w-16 h-24 rounded-lg bg-cinema-700 flex items-center justify-center flex-shrink-0">
-                              <Film className="w-6 h-6 text-cinema-500" />
+                              <Film className="w-6 h-6 text-cinema-700" />
                             </div>
                           )}
 
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-cinema-100 truncate">
+                            <h3 className="font-semibold text-cinema-900 truncate">
                               {item.title}
                             </h3>
-                            <p className="text-xs text-cinema-500 mt-0.5">
+                            <p className="text-xs text-cinema-700 mt-0.5">
                               Watched {new Date(item.watchedAt).toLocaleDateString()}
                             </p>
 
@@ -174,12 +174,12 @@ export default function HistoryPage() {
                                       )}
                                     />
                                   ))}
-                                  <span className="text-xs text-cinema-400 ml-1">
+                                  <span className="text-xs text-cinema-700 ml-1">
                                     {item.rating.rating}/10
                                   </span>
                                 </div>
                                 {item.rating.comment && (
-                                  <p className="text-xs text-cinema-400 mt-1 italic">
+                                  <p className="text-xs text-cinema-700 mt-1 italic">
                                     &quot;{item.rating.comment}&quot;
                                   </p>
                                 )}
@@ -189,7 +189,7 @@ export default function HistoryPage() {
                                     setRatingValue(item.rating!.rating);
                                     setRatingComment(item.rating!.comment || "");
                                   }}
-                                  className="text-xs text-cinema-500 hover:text-cinema-300 mt-1 cursor-pointer"
+                                  className="text-xs text-cinema-700 hover:text-cinema-800 mt-1 cursor-pointer"
                                 >
                                   Edit rating
                                 </button>
@@ -208,12 +208,12 @@ export default function HistoryPage() {
                                           "w-5 h-5 transition-colors",
                                           j < ratingValue
                                             ? "text-accent-400 fill-accent-400"
-                                            : "text-cinema-600 hover:text-cinema-400"
+                                            : "text-cinema-600 hover:text-cinema-700"
                                         )}
                                       />
                                     </button>
                                   ))}
-                                  <span className="text-sm text-cinema-300 ml-2">
+                                  <span className="text-sm text-cinema-800 ml-2">
                                     {ratingValue}/10
                                   </span>
                                 </div>
@@ -222,7 +222,7 @@ export default function HistoryPage() {
                                   placeholder="Add a comment (optional)"
                                   value={ratingComment}
                                   onChange={(e) => setRatingComment(e.target.value)}
-                                  className="w-full text-sm bg-cinema-800 border border-cinema-700 rounded-lg px-3 py-1.5 text-cinema-200 placeholder:text-cinema-500"
+                                  className="w-full text-sm bg-cinema-800 border border-cinema-700 rounded-lg px-3 py-1.5 text-cinema-900 placeholder:text-cinema-700"
                                 />
                                 <div className="flex gap-2">
                                   <Button

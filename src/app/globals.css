@@ -97,14 +97,22 @@ body::before {
   font-family: var(--font-serif);
 }
 
-/* Double-stroke marquee heading */
+/* Double-stroke marquee heading — red on cream */
 .marquee-title {
   font-family: var(--font-display);
-  color: var(--color-gold-500);
+  color: var(--color-accent-500);
   text-shadow:
-    2px 2px 0 var(--color-accent-600),
-    4px 4px 0 var(--color-cinema-900),
-    0 0 18px rgba(230, 197, 101, 0.25);
+    3px 3px 0 var(--color-cinema-900),
+    6px 6px 0 var(--color-gold-500);
+}
+
+/* Dark variant for use on light cards */
+.marquee-title-dark {
+  font-family: var(--font-display);
+  color: var(--color-cinema-900);
+  text-shadow:
+    2px 2px 0 var(--color-gold-500),
+    4px 4px 0 var(--color-accent-500);
 }
 
 /* Ticket stub — jagged top/bottom */
