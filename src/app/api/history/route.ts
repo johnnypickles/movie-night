@@ -38,13 +38,22 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { tmdbMovieId, title, posterPath, roomId } = body;
+  const { tmdbMovieId, title, posterPath, roomId, userWatchedAt } = body;
 
   if (!tmdbMovieId || !title) {
     return NextResponse.json(
       { error: "Movie ID and title are required" },
       { status: 400 }
     );
+  }
+
+  // userWatchedAt is optional; accept ISO date string or null to clear.
+  let parsedUserDate: Date | null | undefined = undefined;
+  if (userWatchedAt === null) {
+    parsedUserDate = null;
+  } else if (typeof userWatchedAt === "string" && userWatchedAt.length > 0) {
+    const d = new Date(userWatchedAt);
+    if (!isNaN(d.getTime())) parsedUserDate = d;
   }
 
   const entry = await prisma.watchHistory.upsert({
@@ -54,13 +63,17 @@ export async function POST(request: NextRequest) {
         tmdbMovieId: tmdbMovieId,
       },
     },
-    update: { watchedAt: new Date() },
+    update: {
+      watchedAt: new Date(),
+      ...(parsedUserDate !== undefined ? { userWatchedAt: parsedUserDate } : {}),
+    },
     create: {
       userId: user.id,
       tmdbMovieId,
       title,
       posterPath: posterPath ?? null,
       roomId: roomId ?? null,
+      userWatchedAt: parsedUserDate ?? null,
     },
   });
 

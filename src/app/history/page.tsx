@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { History, Star, Loader2, Film, Search, Plus, X } from "lucide-react";
+import { History, Star, Loader2, Film, Search, Plus, X, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ interface HistoryItem {
   title: string;
   posterPath: string | null;
   watchedAt: string;
+  userWatchedAt: string | null;
   rating: {
     id: string;
     rating: number;
@@ -35,7 +36,9 @@ export default function HistoryPage() {
   const [ratingMovie, setRatingMovie] = useState<number | null>(null);
   const [ratingValue, setRatingValue] = useState(7);
   const [ratingComment, setRatingComment] = useState("");
+  const [ratingWatchedDate, setRatingWatchedDate] = useState("");
   const [savingRating, setSavingRating] = useState(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   useEffect(() => {
     if (!sessionLoading && !user) {
@@ -52,9 +55,14 @@ export default function HistoryPage() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  async function submitRating(tmdbMovieId: number) {
+  async function submitRating(
+    tmdbMovieId: number,
+    title: string,
+    posterPath: string | null
+  ) {
     setSavingRating(true);
     try {
+      // Save rating
       await fetch("/api/ratings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,16 +72,42 @@ export default function HistoryPage() {
           comment: ratingComment || null,
         }),
       });
-      // Refresh history
+      // Update userWatchedAt on the history row (null if blank).
+      await fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tmdbMovieId,
+          title,
+          posterPath,
+          userWatchedAt: ratingWatchedDate || null,
+        }),
+      });
       const res = await fetch("/api/history");
       const data = await res.json();
       setHistory(data.history || []);
       setRatingMovie(null);
       setRatingComment("");
+      setRatingWatchedDate("");
     } catch {
       // ignore
     } finally {
       setSavingRating(false);
+    }
+  }
+
+  async function deleteRating(tmdbMovieId: number) {
+    if (!confirm("Remove this rating and its entry from your history?")) return;
+    setDeleting(tmdbMovieId);
+    try {
+      await fetch("/api/ratings", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tmdbMovieId }),
+      });
+      setHistory((prev) => prev.filter((h) => h.tmdbMovieId !== tmdbMovieId));
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -173,9 +207,12 @@ export default function HistoryPage() {
                             <h3 className="font-semibold text-cinema-900 truncate">
                               {item.title}
                             </h3>
-                            <p className="text-xs text-cinema-700 mt-0.5">
-                              Watched {new Date(item.watchedAt).toLocaleDateString()}
-                            </p>
+                            {item.userWatchedAt && (
+                              <p className="text-xs text-cinema-700 mt-0.5 font-typewriter">
+                                Watched{" "}
+                                {new Date(item.userWatchedAt).toLocaleDateString()}
+                              </p>
+                            )}
 
                             {/* Rating display or input */}
                             {item.rating && !isRating ? (
@@ -197,23 +234,49 @@ export default function HistoryPage() {
                                   </span>
                                 </div>
                                 {item.rating.comment && (
-                                  <p className="text-xs text-cinema-700 mt-1 italic">
-                                    &quot;{item.rating.comment}&quot;
-                                  </p>
+                                  <blockquote className="mt-2 border-l-2 border-accent-500 pl-3 py-1 font-serif italic text-sm text-cinema-900">
+                                    &ldquo;{item.rating.comment}&rdquo;
+                                  </blockquote>
                                 )}
-                                <button
-                                  onClick={() => {
-                                    setRatingMovie(item.tmdbMovieId);
-                                    setRatingValue(item.rating!.rating);
-                                    setRatingComment(item.rating!.comment || "");
-                                  }}
-                                  className="text-xs text-cinema-700 hover:text-cinema-800 mt-1 cursor-pointer"
-                                >
-                                  Edit rating
-                                </button>
+                                <div className="flex gap-2 mt-3">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => {
+                                      setRatingMovie(item.tmdbMovieId);
+                                      setRatingValue(item.rating!.rating);
+                                      setRatingComment(
+                                        item.rating!.comment || ""
+                                      );
+                                      setRatingWatchedDate(
+                                        item.userWatchedAt
+                                          ? item.userWatchedAt.slice(0, 10)
+                                          : ""
+                                      );
+                                    }}
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() =>
+                                      deleteRating(item.tmdbMovieId)
+                                    }
+                                    disabled={deleting === item.tmdbMovieId}
+                                  >
+                                    {deleting === item.tmdbMovieId ? (
+                                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    )}
+                                    Delete
+                                  </Button>
+                                </div>
                               </div>
                             ) : isRating ? (
-                              <div className="mt-3 space-y-2">
+                              <div className="mt-3 space-y-3">
                                 <div className="flex items-center gap-1">
                                   {Array.from({ length: 10 }, (_, j) => (
                                     <button
@@ -238,18 +301,49 @@ export default function HistoryPage() {
                                 <textarea
                                   placeholder="Add a comment (optional)"
                                   value={ratingComment}
-                                  onChange={(e) => setRatingComment(e.target.value)}
+                                  onChange={(e) =>
+                                    setRatingComment(e.target.value)
+                                  }
                                   rows={2}
                                   maxLength={500}
                                   className="w-full text-sm bg-cinema-50 border-2 border-cinema-900 px-3 py-2 font-typewriter text-cinema-900 placeholder:text-cinema-700/60 focus:outline-none focus:ring-2 focus:ring-gold-500 resize-none"
                                 />
+                                <div>
+                                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-1">
+                                    When did you watch it?{" "}
+                                    <span className="normal-case tracking-normal font-typewriter text-cinema-700/60">
+                                      (optional)
+                                    </span>
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={ratingWatchedDate}
+                                    onChange={(e) =>
+                                      setRatingWatchedDate(e.target.value)
+                                    }
+                                    className="bg-cinema-50 border-2 border-cinema-900 px-3 py-1.5 font-typewriter text-cinema-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                                  />
+                                </div>
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
-                                    onClick={() => submitRating(item.tmdbMovieId)}
+                                    onClick={() =>
+                                      submitRating(
+                                        item.tmdbMovieId,
+                                        item.title,
+                                        item.posterPath
+                                      )
+                                    }
                                     disabled={savingRating}
                                   >
-                                    {savingRating ? "Saving..." : "Save"}
+                                    {savingRating ? (
+                                      <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        Saving…
+                                      </>
+                                    ) : (
+                                      "Save"
+                                    )}
                                   </Button>
                                   <Button
                                     size="sm"
@@ -266,8 +360,13 @@ export default function HistoryPage() {
                                   setRatingMovie(item.tmdbMovieId);
                                   setRatingValue(7);
                                   setRatingComment("");
+                                  setRatingWatchedDate(
+                                    item.userWatchedAt
+                                      ? item.userWatchedAt.slice(0, 10)
+                                      : ""
+                                  );
                                 }}
-                                className="mt-2 text-xs text-accent-400 hover:text-accent-300 cursor-pointer flex items-center gap-1"
+                                className="mt-2 text-xs text-accent-500 hover:text-accent-600 cursor-pointer flex items-center gap-1 font-condensed uppercase tracking-widest"
                               >
                                 <Star className="w-3 h-3" />
                                 Rate this movie
@@ -302,6 +401,7 @@ function RateAnyMovie({ onRated }: { onRated: () => void }) {
   const [picked, setPicked] = useState<SearchPick | null>(null);
   const [rating, setRating] = useState(7);
   const [comment, setComment] = useState("");
+  const [watchedDate, setWatchedDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [ok, setOk] = useState(false);
 
@@ -309,7 +409,6 @@ function RateAnyMovie({ onRated }: { onRated: () => void }) {
     if (!picked) return;
     setSaving(true);
     try {
-      // mark watched so metadata (title/poster) lives in history
       await fetch("/api/history", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -317,6 +416,7 @@ function RateAnyMovie({ onRated }: { onRated: () => void }) {
           tmdbMovieId: picked.id,
           title: picked.title,
           posterPath: picked.posterPath,
+          userWatchedAt: watchedDate || null,
         }),
       });
       await fetch("/api/ratings", {
@@ -333,6 +433,7 @@ function RateAnyMovie({ onRated }: { onRated: () => void }) {
       setPicked(null);
       setQuery("");
       setComment("");
+      setWatchedDate("");
       setRating(7);
       onRated();
     } finally {
@@ -473,6 +574,21 @@ function RateAnyMovie({ onRated }: { onRated: () => void }) {
             maxLength={500}
             className="w-full text-sm bg-cinema-50 border-2 border-cinema-900 px-3 py-2 font-typewriter text-cinema-900 placeholder:text-cinema-700/60 focus:outline-none focus:ring-2 focus:ring-gold-500 resize-none"
           />
+
+          <div className="mt-3">
+            <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-1">
+              When did you watch it?{" "}
+              <span className="normal-case tracking-normal font-typewriter text-cinema-700/60">
+                (optional)
+              </span>
+            </label>
+            <input
+              type="date"
+              value={watchedDate}
+              onChange={(e) => setWatchedDate(e.target.value)}
+              className="bg-cinema-50 border-2 border-cinema-900 px-3 py-1.5 font-typewriter text-cinema-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
+            />
+          </div>
 
           <div className="flex gap-2 mt-3">
             <Button size="sm" onClick={save} disabled={saving}>
