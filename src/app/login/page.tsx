@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Ticket, Loader2 } from "lucide-react";
@@ -151,14 +152,24 @@ export default function LoginPage() {
                   />
                 </div>
                 <div>
-                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
-                    Password{" "}
-                    {isSignup && (
-                      <span className="text-cinema-700/60 normal-case tracking-normal font-typewriter">
-                        (8+ chars)
-                      </span>
+                  <div className="flex items-baseline justify-between mb-2">
+                    <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800">
+                      Password{" "}
+                      {isSignup && (
+                        <span className="text-cinema-700/60 normal-case tracking-normal font-typewriter">
+                          (8+ chars)
+                        </span>
+                      )}
+                    </label>
+                    {!isSignup && (
+                      <Link
+                        href="/forgot-password"
+                        className="font-typewriter text-xs text-accent-500 hover:text-accent-600 normal-case tracking-normal"
+                      >
+                        Forgot?
+                      </Link>
                     )}
-                  </label>
+                  </div>
                   <Input
                     type="password"
                     placeholder="••••••••"
