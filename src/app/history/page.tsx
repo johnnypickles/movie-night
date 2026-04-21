@@ -187,8 +187,8 @@ export default function HistoryPage() {
                                       className={cn(
                                         "w-3.5 h-3.5",
                                         j < item.rating!.rating
-                                          ? "text-accent-400 fill-accent-400"
-                                          : "text-cinema-700"
+                                          ? "text-gold-500 fill-gold-500"
+                                          : "text-cinema-700/40"
                                       )}
                                     />
                                   ))}

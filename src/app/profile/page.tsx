@@ -156,6 +156,9 @@ export default function ProfilePage() {
           />
 
 
+          {/* My Ratings (visible to friends via /user/[id]) */}
+          <MyRatings userId={user.id} />
+
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mb-10">
             {[
@@ -554,5 +557,119 @@ async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {
     };
     img.src = url;
   });
+}
+
+interface MyRating {
+  tmdbMovieId: number;
+  rating: number;
+  comment: string | null;
+  updatedAt: string;
+  title: string | null;
+  posterPath: string | null;
+}
+
+function MyRatings({ userId }: { userId: string }) {
+  const [ratings, setRatings] = useState<MyRating[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/users/${userId}/ratings`)
+      .then((r) => r.json())
+      .then((d) => setRatings(d.ratings || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  if (loading) return null;
+  if (ratings.length === 0) {
+    return (
+      <Card className="mb-8">
+        <CardContent className="p-5 text-center">
+          <div className="font-condensed uppercase tracking-[0.3em] text-accent-500 text-xs mb-1">
+            · My Ratings ·
+          </div>
+          <p className="font-typewriter text-sm text-cinema-800">
+            No ratings yet. Rate a movie on the History page or after a movie
+            night.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const shown = expanded ? ratings : ratings.slice(0, 3);
+  const avg =
+    ratings.reduce((s, r) => s + r.rating, 0) / ratings.length;
+
+  return (
+    <Card className="mb-8">
+      <CardContent className="p-5">
+        <div className="flex items-baseline justify-between mb-3">
+          <div>
+            <div className="font-condensed uppercase tracking-[0.3em] text-accent-500 text-xs">
+              · My Ratings ·
+            </div>
+            <p className="font-typewriter text-xs text-cinema-800 mt-0.5">
+              {ratings.length} rated · avg ★ {avg.toFixed(1)}/10 · friends
+              can see this
+            </p>
+          </div>
+        </div>
+
+        <ul className="space-y-2">
+          {shown.map((r) => (
+            <li
+              key={r.tmdbMovieId}
+              className="flex gap-3 border-t border-dashed border-cinema-800/30 pt-2 first:border-t-0 first:pt-0"
+            >
+              {r.posterPath ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`https://image.tmdb.org/t/p/w92${r.posterPath}`}
+                  alt=""
+                  className="w-10 h-14 object-cover border border-cinema-900 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-14 bg-cinema-100 border border-cinema-900 flex items-center justify-center flex-shrink-0">
+                  <Film className="w-4 h-4 text-cinema-700" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-condensed uppercase tracking-wide text-cinema-900 text-sm truncate">
+                    {r.title || `TMDB #${r.tmdbMovieId}`}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Star
+                      className="w-3.5 h-3.5 text-gold-500"
+                      fill="currentColor"
+                    />
+                    <span className="font-condensed text-cinema-900 text-sm">
+                      {r.rating}
+                    </span>
+                  </div>
+                </div>
+                {r.comment && (
+                  <p className="font-serif italic text-xs text-cinema-800 leading-snug mt-0.5">
+                    &ldquo;{r.comment}&rdquo;
+                  </p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {ratings.length > 3 && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="block mx-auto mt-3 font-condensed uppercase tracking-widest text-xs text-accent-500 hover:text-accent-600"
+          >
+            {expanded ? "Show less" : `Show all ${ratings.length}`}
+          </button>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 

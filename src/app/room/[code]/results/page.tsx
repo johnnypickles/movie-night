@@ -226,12 +226,12 @@ export default function ResultsPage() {
                               {/* Match Score */}
                               <div
                                 className={cn(
-                                  "flex-shrink-0 rounded-xl px-3 py-1.5 text-sm font-bold",
+                                  "flex-shrink-0 px-3 py-1.5 text-sm font-condensed uppercase tracking-wider border-2 border-cinema-900",
                                   rec.matchScore >= 80
-                                    ? "bg-success/10 text-success"
+                                    ? "bg-success text-cinema-50"
                                     : rec.matchScore >= 60
-                                    ? "bg-accent-500/10 text-accent-400"
-                                    : "bg-cinema-700 text-cinema-800"
+                                    ? "bg-gold-500 text-cinema-900"
+                                    : "bg-cinema-100 text-cinema-900"
                                 )}
                               >
                                 {rec.matchScore}% match
@@ -243,7 +243,7 @@ export default function ResultsPage() {
                               {genreIds.slice(0, 4).map((gId) => (
                                 <span
                                   key={gId}
-                                  className="text-xs px-2 py-0.5 rounded-md bg-cinema-800 text-cinema-700"
+                                  className="font-condensed uppercase tracking-widest text-xs px-2 py-0.5 bg-cinema-900 text-cinema-50 border border-cinema-900"
                                 >
                                   {GENRE_LABELS[gId] || gId}
                                 </span>
@@ -252,13 +252,13 @@ export default function ResultsPage() {
 
                             {/* Overview */}
                             {rec.overview && (
-                              <p className="text-sm text-cinema-700 mb-3 line-clamp-2">
+                              <p className="font-serif text-sm text-cinema-900 mb-3 line-clamp-2">
                                 {rec.overview}
                               </p>
                             )}
 
                             {/* Explanation */}
-                            <div className="bg-cinema-800/50 rounded-lg px-3 py-2 text-sm text-cinema-800">
+                            <div className="bg-gold-400/40 border-2 border-cinema-900 px-3 py-2 font-serif italic text-sm text-cinema-900 mb-3">
                               💡 {rec.explanation}
                             </div>
 
@@ -266,7 +266,7 @@ export default function ResultsPage() {
                             {user && (
                               <div className="mt-3">
                                 {watchedMovies.has(rec.tmdbMovieId) ? (
-                                  <span className="inline-flex items-center gap-1.5 text-sm text-success">
+                                  <span className="inline-flex items-center gap-1.5 font-condensed uppercase tracking-widest text-xs text-success">
                                     <Check className="w-4 h-4" />
                                     Watched
                                   </span>
@@ -317,3 +317,4 @@ export default function ResultsPage() {
     </>
   );
 }
+
