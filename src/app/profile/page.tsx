@@ -235,20 +235,25 @@ export default function ProfilePage() {
                       key={friend.friendshipId}
                       className="flex items-center justify-between py-2"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-cinema-700 flex items-center justify-center text-sm font-bold text-cinema-300">
+                      <button
+                        onClick={() => router.push(`/user/${friend.id}`)}
+                        className="flex items-center gap-3 text-left cursor-pointer hover:opacity-80 transition-opacity flex-1 min-w-0"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-cinema-700 flex items-center justify-center text-sm font-bold text-cinema-300 flex-shrink-0">
                           {friend.name?.charAt(0).toUpperCase() ?? "?"}
                         </div>
-                        <div>
-                          <div className="font-medium text-cinema-200">{friend.name}</div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-cinema-200 truncate">
+                            {friend.name}
+                          </div>
                           <div className="text-xs text-cinema-500">
-                            Friends since {new Date(friend.since).toLocaleDateString()}
+                            View their ratings →
                           </div>
                         </div>
-                      </div>
+                      </button>
                       <button
                         onClick={() => removeFriend(friend.friendshipId)}
-                        className="text-cinema-500 hover:text-danger transition-colors cursor-pointer p-1"
+                        className="text-cinema-500 hover:text-danger transition-colors cursor-pointer p-1 flex-shrink-0 ml-2"
                         title="Remove friend"
                       >
                         <X className="w-4 h-4" />

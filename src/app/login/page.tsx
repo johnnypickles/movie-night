@@ -3,38 +3,73 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { User, Loader2 } from "lucide-react";
+import { Ticket, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { useSession } from "@/hooks/use-session";
+
+type Mode = "signin" | "signup";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useSession();
+  const { refresh } = useSession();
+  const [mode, setMode] = useState<Mode>("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("Please enter your name");
+    setError("");
+
+    if (!email.trim() || !password) {
+      setError("Email and password are required");
+      return;
+    }
+    if (mode === "signup" && password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
     setLoading(true);
-    setError("");
 
-    const user = await login(name.trim());
-    if (user) {
+    const endpoint = mode === "signup" ? "/api/auth/signup" : "/api/auth/signin";
+    const body =
+      mode === "signup"
+        ? { email: email.trim(), password, name: name.trim() }
+        : { email: email.trim(), password };
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Something went wrong");
+        setLoading(false);
+        return;
+      }
+      await refresh();
       router.push("/");
-    } else {
-      setError("Something went wrong. Please try again.");
+    } catch {
+      setError("Network error. Please try again.");
       setLoading(false);
     }
   }
+
+  const isSignup = mode === "signup";
 
   return (
     <>
@@ -48,43 +83,123 @@ export default function LoginPage() {
         >
           <Card>
             <CardHeader className="text-center">
-              <div className="w-14 h-14 rounded-xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
-                <User className="w-7 h-7 text-accent-400" />
+              <div className="font-condensed uppercase tracking-[0.3em] text-accent-500 text-xs mb-2">
+                · Members Club ·
               </div>
-              <CardTitle className="text-2xl">Welcome to Movie Night</CardTitle>
+              <div className="w-14 h-14 bg-gold-500 border-2 border-cinema-900 shadow-[3px_3px_0_var(--color-cinema-900)] flex items-center justify-center mx-auto mb-3">
+                <Ticket className="w-7 h-7 text-cinema-900" strokeWidth={2.5} />
+              </div>
+              <CardTitle>{isSignup ? "Get Your Season Pass" : "Welcome Back"}</CardTitle>
               <CardDescription>
-                Enter your name to get started. This lets you track watch history, rate movies, and add friends.
+                {isSignup
+                  ? "Save your ratings, make friends, and keep watching."
+                  : "Sign in to pick up where you left off."}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
+              {/* Tabs */}
+              <div className="grid grid-cols-2 gap-2 mb-5 p-1 bg-cinema-100 border-2 border-cinema-900">
+                <button
+                  type="button"
+                  onClick={() => setMode("signin")}
+                  className={`py-2 font-condensed uppercase tracking-widest text-xs transition ${
+                    mode === "signin"
+                      ? "bg-cinema-900 text-gold-500"
+                      : "text-cinema-800 hover:bg-cinema-200"
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("signup")}
+                  className={`py-2 font-condensed uppercase tracking-widest text-xs transition ${
+                    mode === "signup"
+                      ? "bg-cinema-900 text-gold-500"
+                      : "text-cinema-800 hover:bg-cinema-200"
+                  }`}
+                >
+                  Sign Up
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isSignup && (
+                  <div>
+                    <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
+                      Display Name (optional)
+                    </label>
+                    <Input
+                      placeholder="What should we call you?"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      autoComplete="name"
+                    />
+                  </div>
+                )}
                 <div>
-                  <label className="block text-sm font-medium text-cinema-300 mb-2">
-                    Your Name
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
+                    Email
                   </label>
                   <Input
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block font-condensed uppercase tracking-widest text-xs text-cinema-800 mb-2">
+                    Password{" "}
+                    {isSignup && (
+                      <span className="text-cinema-700/60 normal-case tracking-normal font-typewriter">
+                        (8+ chars)
+                      </span>
+                    )}
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete={
+                      isSignup ? "new-password" : "current-password"
+                    }
                   />
                 </div>
 
                 {error && (
-                  <p className="text-danger text-sm text-center">{error}</p>
+                  <p className="font-typewriter text-danger text-sm text-center">
+                    {error}
+                  </p>
                 )}
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  disabled={loading}
+                >
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Signing in...
+                      {isSignup ? "Stamping your pass…" : "Tearing ticket…"}
                     </>
+                  ) : isSignup ? (
+                    "Get My Pass"
                   ) : (
-                    "Get Started"
+                    "Let Me In"
                   )}
                 </Button>
               </form>
+
+              <p className="font-typewriter text-xs text-cinema-700 text-center mt-4">
+                {isSignup
+                  ? "Already have an account? Click Sign In above."
+                  : "New here? Click Sign Up above."}
+              </p>
             </CardContent>
           </Card>
         </motion.div>

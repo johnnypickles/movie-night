@@ -43,11 +43,52 @@ export async function POST(
       data: { status: "PROCESSING" },
     });
 
-    // Parse survey responses
+    // Pull logged-in participants' ratings + watch history to enrich the survey signal.
+    const userIds = room.participants
+      .map((p) => p.userId)
+      .filter((id): id is string => Boolean(id));
+
+    const [ratings, watched] = await Promise.all([
+      userIds.length > 0
+        ? prisma.movieRating.findMany({
+            where: { userId: { in: userIds } },
+            select: { userId: true, tmdbMovieId: true, rating: true },
+          })
+        : Promise.resolve([]),
+      userIds.length > 0
+        ? prisma.watchHistory.findMany({
+            where: { userId: { in: userIds } },
+            select: { userId: true, tmdbMovieId: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Build per-user lookup maps
+    const userTopRated = new Map<string, number[]>();
+    const userDisliked = new Map<string, Set<number>>();
+    for (const r of ratings) {
+      if (r.rating >= 7) {
+        const arr = userTopRated.get(r.userId) ?? [];
+        arr.push(r.tmdbMovieId);
+        userTopRated.set(r.userId, arr);
+      } else if (r.rating <= 4) {
+        const set = userDisliked.get(r.userId) ?? new Set();
+        set.add(r.tmdbMovieId);
+        userDisliked.set(r.userId, set);
+      }
+    }
+
+    // Watched movies across all participants — excluded from discover pool.
+    const watchedMovieIds = new Set<number>(watched.map((w) => w.tmdbMovieId));
+
+    // Parse survey responses, merging in each user's top-rated movies as bonus favorites.
     const surveys: SurveyData[] = room.participants
       .filter((p) => p.surveyResponse)
       .map((p) => {
         const s = p.surveyResponse!;
+        const surveyFavs: number[] = JSON.parse(s.favoriteMovieIds);
+        const extraFavs = p.userId ? (userTopRated.get(p.userId) ?? []) : [];
+        const merged = Array.from(new Set([...surveyFavs, ...extraFavs]));
         return {
           mood: s.mood as SurveyData["mood"],
           vibeWords: JSON.parse(s.vibeWords),
@@ -57,7 +98,7 @@ export async function POST(
           decadeMax: s.decadeMax,
           maxRuntime: s.maxRuntime,
           minRating: s.minRating,
-          favoriteMovieIds: JSON.parse(s.favoriteMovieIds),
+          favoriteMovieIds: merged,
           noSubtitles: s.noSubtitles,
           noBlackWhite: s.noBlackWhite,
           noAnimation: s.noAnimation,
@@ -73,9 +114,12 @@ export async function POST(
       );
     }
 
-    // Get watched movie IDs for filtering
-    const watchedMovieIds = new Set<number>();
-    // TODO: Pull from watch history when auth is implemented
+    // Flatten all disliked movies across the group — will be excluded from results.
+    const groupDisliked = new Set<number>();
+    for (const set of userDisliked.values()) {
+      for (const id of set) groupDisliked.add(id);
+    }
+    for (const id of groupDisliked) watchedMovieIds.add(id);
 
     // Run recommendation engine (discover or shortlist)
     const results =
