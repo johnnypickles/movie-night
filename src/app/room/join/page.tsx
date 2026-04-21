@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Ticket, Loader2 } from "lucide-react";
@@ -11,6 +11,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { useSession } from "@/hooks/use-session";
 
 export default function JoinRoomPage() {
+  return (
+    <Suspense fallback={null}>
+      <JoinRoomPageInner />
+    </Suspense>
+  );
+}
+
+function JoinRoomPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, refresh } = useSession();

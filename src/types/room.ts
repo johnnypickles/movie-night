@@ -11,6 +11,7 @@ export interface Participant {
   name: string;
   avatar: string | null;
   surveyCompleted: boolean;
+  userId: string | null;
 }
 
 export interface RoomData {
