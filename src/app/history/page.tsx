@@ -134,7 +134,7 @@ export default function HistoryPage() {
                   Create a room, take the survey, and mark a movie as watched from the results page.
                 </p>
                 <Button onClick={() => router.push("/room/create")} variant="secondary">
-                  Start a Movie Night
+                  Start a MovieMatch
                 </Button>
               </CardContent>
             </Card>

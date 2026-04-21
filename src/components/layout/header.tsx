@@ -18,7 +18,7 @@ export function Header() {
             className="font-marquee text-xl sm:text-2xl text-cinema-900 leading-none"
             style={{ letterSpacing: "0.02em" }}
           >
-            Movie Night
+            MovieMatch
           </span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-3 font-condensed uppercase tracking-widest text-xs sm:text-sm">

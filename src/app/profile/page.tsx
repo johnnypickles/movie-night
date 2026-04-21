@@ -229,7 +229,7 @@ export default function ProfilePage() {
               {/* Friends list */}
               {friends.length === 0 ? (
                 <p className="text-cinema-700 text-center py-4 text-sm">
-                  No friends yet. Search above to add friends who use Movie Night!
+                  No friends yet. Search above to add friends who use MovieMatch!
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -297,8 +297,8 @@ function ShareProfileCard({ userId }: { userId: string }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Add me on Movie Night",
-          text: "Add me as a friend on Movie Night",
+          title: "Add me on MovieMatch",
+          text: "Add me as a friend on MovieMatch",
           url,
         });
         return;

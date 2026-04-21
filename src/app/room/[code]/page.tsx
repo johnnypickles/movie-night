@@ -75,8 +75,8 @@ export default function RoomLobbyPage() {
   async function shareLink() {
     const url = getRoomUrl();
     const shareData = {
-      title: "Movie Night",
-      text: `Join my Movie Night room — code ${code}`,
+      title: "MovieMatch",
+      text: `Join my MovieMatch room — code ${code}`,
       url,
     };
     if (navigator.share) {
@@ -134,7 +134,7 @@ export default function RoomLobbyPage() {
               · Admit One ·
             </div>
             <h1 className="font-marquee text-4xl md:text-5xl text-cinema-900 mb-2">
-              {roomName || "Movie Night"}
+              {roomName || "MovieMatch"}
             </h1>
             <p className="font-typewriter text-sm text-cinema-700">
               Share the ticket. Seat the crew. Start the show.

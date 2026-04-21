@@ -31,11 +31,11 @@ const bebas = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Movie Night - Find the Perfect Movie for Your Group",
+  title: "MovieMatch - Find the Perfect Movie for Your Group",
   description:
     "Can't decide what to watch? Create a room, invite your friends, and let our algorithm find the perfect movie for everyone.",
   openGraph: {
-    title: "Movie Night - Find the Perfect Movie for Your Group",
+    title: "MovieMatch - Find the Perfect Movie for Your Group",
     description:
       "Can't decide what to watch? Create a room, invite your friends, and let our algorithm find the perfect movie for everyone.",
     type: "website",

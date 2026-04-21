@@ -54,7 +54,7 @@ export default function HomePage() {
                 MOVIE
               </h1>
               <h1 className="marquee-title text-5xl sm:text-7xl md:text-8xl leading-[0.95] mb-8 tracking-wide">
-                NIGHT
+                MATCH
               </h1>
 
               <div className="divider-stars max-w-md mx-auto mb-8 text-sm">
@@ -148,7 +148,7 @@ export default function HomePage() {
               — The End —
             </div>
             <p>
-              Movie data provided by TMDB. Movie Night is not endorsed or
+              Movie data provided by TMDB. MovieMatch is not endorsed or
               certified by TMDB.
             </p>
           </div>
