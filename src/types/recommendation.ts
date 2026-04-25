@@ -27,5 +27,7 @@ export interface GroupPreferences {
   requireEnglish: boolean;
   /** Strictest max-cert across the group, or null for no restriction. */
   maxCertification: "G" | "PG" | "PG-13" | "R" | null;
+  /** Union of TMDB provider IDs across the group. Empty = no filter. */
+  streamingProviders: number[];
   participantCount: number;
 }

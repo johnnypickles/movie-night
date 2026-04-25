@@ -151,12 +151,13 @@ model SurveyResponse {
   maxRuntime       Int?
   minRating        Float?
   favoriteMovieIds String  @default("[]") // JSON array of TMDB movie IDs
-  noSubtitles       Boolean @default(false)
-  noBlackWhite      Boolean @default(false)
-  noAnimation       Boolean @default(false)
-  noHorror          Boolean @default(false)
-  maxCertification  String? // "G" | "PG" | "PG-13" | "R" | null (= any)
-  wildCard          String?
+  noSubtitles        Boolean @default(false)
+  noBlackWhite       Boolean @default(false)
+  noAnimation        Boolean @default(false)
+  noHorror           Boolean @default(false)
+  maxCertification   String? // "G" | "PG" | "PG-13" | "R" | null (= any)
+  streamingProviders String  @default("[]") // JSON array of TMDB provider IDs
+  wildCard           String?
 
   createdAt DateTime @default(now())
 

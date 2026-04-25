@@ -46,6 +46,10 @@ export interface DiscoverParams {
   maxCertification?: string;
   /** Country code for certification lookup (default US). */
   certificationCountry?: string;
+  /** TMDB watch-provider IDs (OR). */
+  watchProviders?: number[];
+  /** Watch-region for providers (default US). */
+  watchRegion?: string;
 }
 
 // Simple in-memory cache
@@ -124,6 +128,12 @@ export const tmdb = {
       queryParams.certification_country =
         params.certificationCountry ?? "US";
       queryParams["certification.lte"] = params.maxCertification;
+    }
+    if (params.watchProviders?.length) {
+      queryParams.with_watch_providers = params.watchProviders.join("|");
+      queryParams.watch_region = params.watchRegion ?? "US";
+      // Include both flat-rate (subscription) and free with-ads (commonly bundled)
+      queryParams.with_watch_monetization_types = "flatrate|free|ads";
     }
 
     return tmdbFetch<TMDBResponse>("/discover/movie", queryParams);

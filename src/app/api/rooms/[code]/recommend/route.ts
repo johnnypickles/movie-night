@@ -104,6 +104,7 @@ export async function POST(
           noAnimation: s.noAnimation,
           noHorror: s.noHorror,
           maxCertification: (s.maxCertification ?? null) as SurveyData["maxCertification"],
+          streamingProviders: JSON.parse(s.streamingProviders || "[]"),
           wildCard: s.wildCard,
         };
       });

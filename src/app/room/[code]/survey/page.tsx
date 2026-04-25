@@ -23,11 +23,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MOOD_LABELS, GENRE_LABELS, type Mood } from "@/lib/survey-weights";
-import { VIBE_WORDS, type MaxCertification } from "@/types/survey";
+import {
+  VIBE_WORDS,
+  STREAMING_PROVIDERS,
+  type MaxCertification,
+} from "@/types/survey";
 import { useTmdbSearch } from "@/hooks/use-tmdb-search";
 import { tmdb } from "@/lib/tmdb";
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const MOOD_ICONS: Record<string, LucideIcon> = {
   Sofa,
@@ -71,6 +75,7 @@ export default function SurveyPage() {
   const [noHorror, setNoHorror] = useState(false);
   const [maxCertification, setMaxCertification] =
     useState<MaxCertification>(null);
+  const [streamingProviders, setStreamingProviders] = useState<number[]>([]);
   const [isEdit, setIsEdit] = useState(false);
 
   // Load existing response (if any) so Edit-My-Answers pre-fills.
@@ -109,6 +114,9 @@ export default function SurveyPage() {
           r.maxCertification === "R"
         ) {
           setMaxCertification(r.maxCertification);
+        }
+        if (Array.isArray(r.streamingProviders)) {
+          setStreamingProviders(r.streamingProviders);
         }
 
         // Rehydrate favorites with details (best-effort)
@@ -217,6 +225,7 @@ export default function SurveyPage() {
             noAnimation,
             noHorror,
             maxCertification,
+            streamingProviders,
           },
         }),
       });
@@ -746,6 +755,59 @@ export default function SurveyPage() {
                     );
                   })}
                 </div>
+              </div>
+            )}
+
+            {/* Step 8: Streaming services */}
+            {step === 8 && (
+              <div>
+                <h2 className="text-2xl font-bold text-cinema-900 mb-2 text-center">
+                  Where can you watch?
+                </h2>
+                <p className="text-cinema-700 text-center mb-8">
+                  Pick the services you have access to. We&apos;ll only
+                  suggest movies you can stream.{" "}
+                  <span className="font-typewriter text-cinema-700/70">
+                    (Skip to allow anything.)
+                  </span>
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {STREAMING_PROVIDERS.map((p) => {
+                    const selected = streamingProviders.includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() =>
+                          setStreamingProviders((prev) =>
+                            selected
+                              ? prev.filter((x) => x !== p.id)
+                              : [...prev, p.id]
+                          )
+                        }
+                        className={cn(
+                          "border-2 p-3 text-center transition-all cursor-pointer",
+                          selected
+                            ? "border-cinema-900 bg-gold-400 shadow-[3px_3px_0_var(--color-cinema-900)]"
+                            : "border-cinema-900/40 bg-cinema-50 hover:border-cinema-900"
+                        )}
+                      >
+                        <div className="font-condensed uppercase tracking-widest text-xs text-cinema-900">
+                          {p.name}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {streamingProviders.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setStreamingProviders([])}
+                    className="block mx-auto mt-4 font-typewriter text-xs text-cinema-700 hover:text-accent-500"
+                  >
+                    Clear all
+                  </button>
+                )}
               </div>
             )}
           </motion.div>

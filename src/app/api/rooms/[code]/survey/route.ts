@@ -52,6 +52,7 @@ export async function GET(
       noAnimation: s.noAnimation,
       noHorror: s.noHorror,
       maxCertification: s.maxCertification,
+      streamingProviders: JSON.parse(s.streamingProviders || "[]"),
     },
   });
 }
@@ -108,6 +109,7 @@ export async function POST(
       noAnimation: surveyData.noAnimation ?? false,
       noHorror: surveyData.noHorror ?? false,
       maxCertification: surveyData.maxCertification ?? null,
+      streamingProviders: JSON.stringify(surveyData.streamingProviders || []),
       wildCard: surveyData.wildCard ?? null,
     };
 

@@ -18,8 +18,24 @@ export interface SurveyData {
   noAnimation: boolean;
   noHorror: boolean;
   maxCertification: MaxCertification;
+  /** TMDB watch-provider IDs the user has access to. Empty = no filter. */
+  streamingProviders: number[];
   wildCard: string | null;
 }
+
+// TMDB watch-provider IDs (US region).
+export const STREAMING_PROVIDERS: { id: number; name: string }[] = [
+  { id: 8, name: "Netflix" },
+  { id: 9, name: "Prime Video" },
+  { id: 337, name: "Disney+" },
+  { id: 1899, name: "Max" },
+  { id: 15, name: "Hulu" },
+  { id: 350, name: "Apple TV+" },
+  { id: 387, name: "Peacock" },
+  { id: 531, name: "Paramount+" },
+  { id: 257, name: "fuboTV" },
+  { id: 386, name: "Paramount+ Showtime" },
+];
 
 export const VIBE_WORDS = [
   "funny",

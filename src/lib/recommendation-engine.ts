@@ -97,8 +97,20 @@ export function aggregatePreferences(
     watchedMovieIds,
     requireEnglish,
     maxCertification: strictestCert,
+    streamingProviders: aggregateProviders(surveys),
     participantCount: count,
   };
+}
+
+// Union of every participant's chosen providers; empty if no one picked.
+function aggregateProviders(surveys: SurveyData[]): number[] {
+  const set = new Set<number>();
+  for (const s of surveys) {
+    for (const id of s.streamingProviders ?? []) {
+      set.add(id);
+    }
+  }
+  return [...set];
 }
 
 // ─── Phase 2: Generate Candidate Movies ────────────────
@@ -130,6 +142,10 @@ export async function generateCandidates(
     language: prefs.requireEnglish ? "en" : undefined,
     excludeGenres: [...prefs.excludeGenres],
     maxCertification: prefs.maxCertification ?? undefined,
+    watchProviders:
+      prefs.streamingProviders.length > 0
+        ? prefs.streamingProviders
+        : undefined,
   };
 
   // Run parallel TMDB queries
