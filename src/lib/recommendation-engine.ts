@@ -380,7 +380,8 @@ export function generateExplanation(
 export async function getShortlistRecommendations(
   surveys: SurveyData[],
   candidateMovieIds: number[],
-  watchedMovieIds: Set<number> = new Set()
+  watchedMovieIds: Set<number> = new Set(),
+  options: { excludeMovieIds?: Set<number>; count?: number } = {}
 ): Promise<
   {
     movie: ScoredMovie;
@@ -389,11 +390,13 @@ export async function getShortlistRecommendations(
     rank: number;
   }[]
 > {
+  const exclude = options.excludeMovieIds ?? new Set<number>();
+  const ids = candidateMovieIds.filter((id) => !exclude.has(id));
   const prefs = aggregatePreferences(surveys, watchedMovieIds);
 
   // Fetch full details for each candidate in parallel
   const details = await Promise.all(
-    candidateMovieIds.map(async (id) => {
+    ids.map(async (id) => {
       try {
         const d = await tmdb.getMovieDetails(id);
         return d;
@@ -444,7 +447,8 @@ export async function getShortlistRecommendations(
 
 export async function getRecommendations(
   surveys: SurveyData[],
-  watchedMovieIds: Set<number> = new Set()
+  watchedMovieIds: Set<number> = new Set(),
+  options: { excludeMovieIds?: Set<number>; count?: number } = {}
 ): Promise<
   {
     movie: ScoredMovie;
@@ -453,18 +457,22 @@ export async function getRecommendations(
     rank: number;
   }[]
 > {
+  const count = options.count ?? 5;
+  const exclude = options.excludeMovieIds ?? new Set<number>();
+
   // Step 1: Aggregate
   const prefs = aggregatePreferences(surveys, watchedMovieIds);
 
-  // Step 2: Generate candidates
-  const candidates = await generateCandidates(prefs);
+  // Step 2: Generate candidates, then drop any in the exclude set
+  const allCandidates = await generateCandidates(prefs);
+  const candidates = allCandidates.filter((m) => !exclude.has(m.id));
 
   if (candidates.length === 0) {
     return [];
   }
 
-  // Step 3: Score and select top 5
-  const topMovies = selectTopMovies(candidates, prefs, 5);
+  // Step 3: Score and select top N
+  const topMovies = selectTopMovies(candidates, prefs, count);
 
   // Step 4: Generate explanations
   const maxScore = Math.max(...topMovies.map((m) => m._score), 1);

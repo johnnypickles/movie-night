@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Star, Clock, Calendar, ThumbsUp, Loader2, ArrowLeft, Eye, Check } from "lucide-react";
+import { Trophy, Star, Clock, Calendar, ThumbsUp, Loader2, ArrowLeft, Eye, Check, RefreshCw, Shuffle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/layout/header";
@@ -40,6 +40,8 @@ export default function ResultsPage() {
   const [error, setError] = useState("");
   const [watchedMovies, setWatchedMovies] = useState<Set<number>>(new Set());
   const [markingWatched, setMarkingWatched] = useState<number | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [swapNotice, setSwapNotice] = useState("");
 
   useEffect(() => {
     async function fetchResults() {
@@ -84,6 +86,7 @@ export default function ResultsPage() {
   async function markAsWatched(tmdbMovieId: number, title: string, posterPath: string | null) {
     if (!user) return;
     setMarkingWatched(tmdbMovieId);
+    setSwapNotice("");
     try {
       await fetch("/api/history", {
         method: "POST",
@@ -91,10 +94,97 @@ export default function ResultsPage() {
         body: JSON.stringify({ tmdbMovieId, title, posterPath }),
       });
       setWatchedMovies((prev) => new Set(prev).add(tmdbMovieId));
+
+      // Swap that pick with the next-best compatible movie.
+      const res = await fetch(`/api/rooms/${code}/replace`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tmdbMovieId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newRec = data.recommendation;
+        setRecommendations((prev) =>
+          prev.map((r) =>
+            r.tmdbMovieId === tmdbMovieId
+              ? {
+                  ...r,
+                  ...newRec,
+                  // Maintain shape: convert genreIds back to JSON string for our state.
+                  genreIds: JSON.stringify(newRec.genreIds),
+                  releaseYear: newRec.releaseDate
+                    ? parseInt(newRec.releaseDate.slice(0, 4), 10)
+                    : null,
+                  runtime: null,
+                  votes: 0,
+                  chosen: false,
+                  id: r.id, // keep db id stable in UI; server has its own new row
+                }
+              : r
+          )
+        );
+        setSwapNotice(`Swapped in: ${newRec.title}`);
+        setTimeout(() => setSwapNotice(""), 3000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSwapNotice(data?.error || "No more matches to swap in.");
+        setTimeout(() => setSwapNotice(""), 3000);
+      }
     } catch {
       // ignore
     } finally {
       setMarkingWatched(null);
+    }
+  }
+
+  async function regenerate() {
+    if (regenerating) return;
+    setRegenerating(true);
+    setSwapNotice("");
+    try {
+      const res = await fetch(`/api/rooms/${code}/regenerate`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setSwapNotice(data?.error || "Couldn't regenerate.");
+        setTimeout(() => setSwapNotice(""), 3000);
+        return;
+      }
+      const data = await res.json();
+      setRecommendations(
+        data.recommendations.map((r: {
+          tmdbMovieId: number;
+          title: string;
+          posterPath: string | null;
+          overview: string | null;
+          matchScore: number;
+          explanation: string;
+          rank: number;
+          voteAverage: number | null;
+          releaseDate: string | null;
+          genreIds: number[];
+        }) => ({
+          id: `regen-${r.tmdbMovieId}`,
+          tmdbMovieId: r.tmdbMovieId,
+          title: r.title,
+          posterPath: r.posterPath,
+          overview: r.overview,
+          matchScore: r.matchScore,
+          explanation: r.explanation,
+          rank: r.rank,
+          genreIds: JSON.stringify(r.genreIds),
+          releaseYear: r.releaseDate
+            ? parseInt(r.releaseDate.slice(0, 4), 10)
+            : null,
+          runtime: null,
+          voteAverage: r.voteAverage,
+          votes: 0,
+          chosen: false,
+        }))
+      );
+    } finally {
+      setRegenerating(false);
     }
   }
 
@@ -122,7 +212,7 @@ export default function ResultsPage() {
           transition={{ duration: 0.5 }}
         >
           {/* Header */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-accent-500/10 flex items-center justify-center mx-auto mb-4">
               <Trophy className="w-8 h-8 text-accent-400" />
             </div>
@@ -133,6 +223,34 @@ export default function ResultsPage() {
               Based on everyone&apos;s preferences, here are your top picks
             </p>
           </div>
+
+          {recommendations.length > 0 && !error && (
+            <div className="flex flex-col items-center mb-6 gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={regenerate}
+                disabled={regenerating}
+              >
+                {regenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Reshuffling…
+                  </>
+                ) : (
+                  <>
+                    <Shuffle className="w-4 h-4" />
+                    Show me different movies
+                  </>
+                )}
+              </Button>
+              {swapNotice && (
+                <p className="font-typewriter text-xs text-cinema-700 text-center">
+                  {swapNotice}
+                </p>
+              )}
+            </div>
+          )}
 
           {error ? (
             <div className="text-center py-12">
