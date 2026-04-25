@@ -101,35 +101,38 @@ export const MOOD_GENRE_MAP: Record<Mood, GenreWeight[]> = {
   ],
 };
 
-export const MOOD_LABELS: Record<Mood, { label: string; emoji: string; description: string }> = {
+export const MOOD_LABELS: Record<
+  Mood,
+  { label: string; icon: string; description: string }
+> = {
   chill: {
     label: "Chill",
-    emoji: "😌",
+    icon: "Sofa",
     description: "Relaxed, feel-good vibes",
   },
   adventurous: {
     label: "Adventurous",
-    emoji: "🗺️",
+    icon: "Mountain",
     description: "Epic, exciting journeys",
   },
   intense: {
     label: "Intense",
-    emoji: "😰",
+    icon: "Flame",
     description: "Edge-of-your-seat thrills",
   },
   silly: {
     label: "Silly",
-    emoji: "🤣",
+    icon: "PartyPopper",
     description: "Laugh until it hurts",
   },
   romantic: {
     label: "Romantic",
-    emoji: "💕",
+    icon: "Heart",
     description: "Heartfelt and emotional",
   },
   mindBending: {
     label: "Mind-Bending",
-    emoji: "🧠",
+    icon: "Brain",
     description: "Twists, puzzles, and wonder",
   },
 };

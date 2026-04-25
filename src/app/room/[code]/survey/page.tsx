@@ -3,7 +3,20 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Loader2, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Loader2,
+  Search,
+  Sofa,
+  Mountain,
+  Flame,
+  PartyPopper,
+  Heart,
+  Brain,
+  type LucideIcon,
+} from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +28,15 @@ import { useTmdbSearch } from "@/hooks/use-tmdb-search";
 import { tmdb } from "@/lib/tmdb";
 
 const TOTAL_STEPS = 7;
+
+const MOOD_ICONS: Record<string, LucideIcon> = {
+  Sofa,
+  Mountain,
+  Flame,
+  PartyPopper,
+  Heart,
+  Brain,
+};
 
 interface FavoriteMovie {
   id: number;
@@ -275,26 +297,43 @@ export default function SurveyPage() {
                   Pick the mood that matches how you&apos;re feeling
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {(Object.entries(MOOD_LABELS) as [Mood, typeof MOOD_LABELS[Mood]][]).map(
-                    ([key, { label, emoji, description }]) => (
+                  {(
+                    Object.entries(MOOD_LABELS) as [
+                      Mood,
+                      typeof MOOD_LABELS[Mood]
+                    ][]
+                  ).map(([key, { label, icon, description }]) => {
+                    const Icon = MOOD_ICONS[icon] ?? Sofa;
+                    const selected = mood === key;
+                    return (
                       <button
                         key={key}
                         onClick={() => setMood(key)}
                         className={cn(
-                          "rounded-2xl border-2 p-5 text-center transition-all duration-200 cursor-pointer hover:scale-[1.02]",
-                          mood === key
-                            ? "border-accent-500 bg-accent-500/10 shadow-lg shadow-accent-500/10"
-                            : "border-cinema-900/30 bg-cinema-50 hover:border-cinema-900"
+                          "border-2 p-5 text-center transition-all duration-150 cursor-pointer",
+                          selected
+                            ? "border-cinema-900 bg-gold-400 shadow-[4px_4px_0_var(--color-cinema-900)]"
+                            : "border-cinema-900/40 bg-cinema-50 hover:border-cinema-900 hover:bg-cinema-100"
                         )}
                       >
-                        <div className="text-3xl mb-2">{emoji}</div>
-                        <div className="font-semibold text-cinema-900">{label}</div>
-                        <div className="text-xs text-cinema-700 mt-1">
+                        <Icon
+                          className={cn(
+                            "w-7 h-7 mx-auto mb-3",
+                            selected
+                              ? "text-cinema-900"
+                              : "text-accent-500"
+                          )}
+                          strokeWidth={selected ? 2.5 : 2}
+                        />
+                        <div className="font-condensed uppercase tracking-widest text-cinema-900">
+                          {label}
+                        </div>
+                        <div className="font-typewriter text-xs text-cinema-700 mt-1">
                           {description}
                         </div>
                       </button>
-                    )
-                  )}
+                    );
+                  })}
                 </div>
 
                 {/* Vibe words */}
